@@ -1,0 +1,74 @@
+﻿html, body, img {	
+	margin: 0;
+	padding: 0;
+	border: 0;
+	vertical-align: baseline;
+}
+
+html, body { height: 100%; }
+
+body {
+	text-align: center;
+	font-family: Roboto, Tahoma, Geneva, sans-serif;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	-webkit-tap-highlight-color: transparent;
+	background-color: #545454;
+	color: #ffffff;
+}
+
+.header {
+	position: fixed;
+	width: 100%;
+	left: 0px;
+	top: 0px;
+	height: 50px;
+	z-index: 99;
+	vertical-align: middle;
+	text-align: left;
+	line-height: 48px;
+	font-size: 20px;
+	background-color: #111111;
+	background-image: -webkit-linear-gradient(top, #545454, #111111);
+	-webkit-box-shadow: 0px 2px 3px #545454;
+	box-shadow: 0px 2px 3px #545454;
+}
+
+.backArrow {
+	float: left;
+	font-size: 42px;
+	color: #9A9A9A;
+}
+
+.content {
+	z-index: 98;
+	padding-top: 54px;
+	padding-bottom: 46px;
+}
+
+.mobClass, .marketClass {
+	float: left;
+	line-height: 48px;
+	font-weight: bold;
+	font-size: 22px;
+	text-shadow: 0px 0px 1px #ffffff;
+}
+.mobClass {
+	color: #28E330;
+	font-style: italic;
+}
+.marketClass {
+	color: #ffffff;
+}
+
+.menuItem {
+	clear: both;
+	margin: 8px;
+	padding: 4px;
+	font-size: 24px;
+	line-height: 32px;
+	text-align: left;
+	background-color: #111111;
+	-webkit-border-radius: 2px;
+	-webkit-box-shadow: 0px 0px 2px #ffffff;
+	box-shadow: 0px 0px 2px #ffffff;
+}
