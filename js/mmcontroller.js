@@ -117,6 +117,7 @@ document.addEventListener("deviceready", function () {
 		"use strict";
 		function restoreDefault(e) {
 			e.style.opacity = "1";
+			e.removeEventListener("touchstart");
 			e.removeEventListener("touchmove");
 			e.removeEventListener("touchend");
 		}
