@@ -76,9 +76,8 @@ document.addEventListener("deviceready", function () {
 				touchendEvent,
 				restoreDefault = function () {
 					elm.style.opacity = "1";
-					elm.removeEventListener("touchstart");
-					elm.removeEventListener("touchmove");
-					elm.removeEventListener("touchend");
+					elm.removeEventListener("touchmove", touchmoveEvent);
+					elm.removeEventListener("touchend", touchendEvent);
 				};
 			touchmoveEvent = function () {
 				restoreDefault();
