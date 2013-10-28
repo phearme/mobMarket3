@@ -8,17 +8,26 @@
 	<title>mobMarket</title>
 	<script type="text/javascript" src="phonegap.js"></script>
 	<script type="text/javascript" src="js/angular.min.js"></script>
+	<script type="text/javascript" src="js/newsreader.js"></script>
 	<script type="text/javascript" src="js/mmcontroller.js"></script>
 </head>
 <body ng-controller="mmCtrl">
 	<div id="screenMain">
 		<div id="mainHeader" class="header">
-			<span class="backArrow" ng-show="selectedScreen">&#8249;</span>
-			<img style="float: left" src="img/logo.png" />
-			<span ng-hide="selectedScreen">
-				<span class="mobClass">mob</span><span class="marketClass">Market</span>
-			</span>
-			<span ng-show="selectedScreen">{{selectedScreen.label}}</span>
+			<div touch-action="goBack" touch-btn="{{selectedScreen}}">
+				<span class="backArrow">
+					<span ng-hide="selectedScreen">&nbsp;</span>
+					<span ng-show="selectedScreen">&#8249;</span>
+				</span>
+				<img style="float: left" src="img/logo.png" />
+				<span ng-hide="selectedScreen">
+					<span class="mobClass">mob</span><span class="marketClass">Market</span>
+				</span>
+				<span ng-show="selectedScreen">{{selectedScreen.label}}</span>
+			</div>
+		</div>
+		<div ng-show="loading" class="content">
+			<img src="img/loader.gif" />
 		</div>
 		<div ng-show="!selectedScreen" class="content">
 			<div ng-repeat="menuItem in screens" class="menuItem" touch-action="selectScreen" touch-btn="{{menuItem}}">
@@ -26,7 +35,17 @@
 				<div style="float: right">&#8250;</div>
 			</div>
 		</div>
-		<div ng-show="selectedScreen == screens.news" class="content">
+		<div ng-show="selectedScreen.id == 'search'" class="content">
+			<input class="inputSearch" type="search" name="search" placeholder="Search" ng-model="searchStock" />
+			
+		</div>
+		<div ng-show="selectedScreen.id == 'news'" class="content">
+			<div ng-repeat="newsItem in newsItems" touch-action="openLink" touch-btn="{{newsItem.link}}" class="newsItem">
+				<img class="newsImage" ng-show="newsItem.image" ng-src="http:{{newsItem.image}}" />
+				<div class="newsTitle">{{newsItem.title}}</div>
+				<div class="newsDate">{{newsItem.pubDate}}</div>
+				<p class="newsContent" ng-show="newsItem.content">{{newsItem.content}}</p>
+			</div>
 		</div>
 	</div>
 </body>

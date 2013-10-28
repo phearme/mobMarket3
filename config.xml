@@ -82,6 +82,8 @@
     <gap:splash src="res/screen/windows-phone/screen-portrait.jpg" gap:platform="winphone" />
 
 	<gap:platform name="android" />
+
+	<gap:plugin name="org.apache.cordova.inappbrowser" />
     <!--
         Define access to external domains.
 
