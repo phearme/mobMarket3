@@ -1,9 +1,27 @@
+/*global XMLHttpRequest*/
 var NewsReader = (function () {
 	"use strict";
 
 	function NewsReader() {
 		this.rssUrl = "https://news.google.com/news/section?pz=1&cf=all&topic=b&output=rss";
 	}
+
+	NewsReader.prototype._getNodeValue = function (xmlNode, tagName) {
+		var returnValue,
+			node = xmlNode.getElementsByTagName(tagName);
+		if (node && node.length > 0) { returnValue = node[0].textContent; }
+		return returnValue;
+	};
+
+	NewsReader.prototype.NewsModel = function (title, link, pubDate, image, content) {
+		return {
+			title: title,
+			link: link,
+			pubDate: pubDate,
+			image: image,
+			content: content
+		};
+	};
 
 	NewsReader.prototype.getNews = function (search, callback) {
 		var xhr = new XMLHttpRequest(),
@@ -14,21 +32,18 @@ var NewsReader = (function () {
 		xhr.open("GET", url, true);
 		xhr.onreadystatechange = function () {
 			var data, itemNodes, items = [], i, j,
-				item, titleNode, linkNode, pubDate, description,
-				parsedDesc, descImages, descFonts, fontTagOccurance;
+				item, description, parsedDesc, descImages, descFonts, fontTagOccurance;
 			if (xhr.readyState === 4) {
 				if (xhr.status === 200) {
 					data = (new window.DOMParser()).parseFromString(xhr.responseText, "text/xml");
 					itemNodes = data.getElementsByTagName("item");
 					if (itemNodes && itemNodes.length > 0) {
 						for (i = 0; i < itemNodes.length; i += 1) {
-							item = {};
-							titleNode = itemNodes[i].getElementsByTagName("title");
-							if (titleNode && titleNode.length > 0) { item.title = titleNode[0].textContent; }
-							linkNode = itemNodes[i].getElementsByTagName("link");
-							if (linkNode && linkNode.length > 0) { item.link = linkNode[0].textContent; }
-							pubDate = itemNodes[i].getElementsByTagName("pubDate");
-							if (pubDate && pubDate.length > 0) { item.pubDate = pubDate[0].textContent; }
+							item = this.NewsModel(
+								this._getNodeValue(itemNodes[i], "title"),
+								this._getNodeValue(itemNodes[i], "link"),
+								this._getNodeValue(itemNodes[i], "pubDate")
+							);
 							description = itemNodes[i].getElementsByTagName("description");
 							if (description && description.length > 0) {
 								parsedDesc = (new window.DOMParser()).parseFromString(description[0].textContent, "text/xml");
@@ -67,7 +82,7 @@ var NewsReader = (function () {
 					callback(false);
 				}
 			}
-		};
+		}.bind(this);
 		xhr.send(null);
 	};
 

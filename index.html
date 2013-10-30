@@ -9,6 +9,8 @@
 	<script type="text/javascript" src="phonegap.js"></script>
 	<script type="text/javascript" src="js/angular.min.js"></script>
 	<script type="text/javascript" src="js/newsreader.js"></script>
+	<script type="text/javascript" src="js/ysearch.js"></script>
+	<script type="text/javascript" src="js/yquotes.js"></script>
 	<script type="text/javascript" src="js/mmcontroller.js"></script>
 </head>
 <body ng-controller="mmCtrl">
@@ -23,28 +25,54 @@
 				<span ng-hide="selectedScreen">
 					<span class="mobClass">mob</span><span class="marketClass">Market</span>
 				</span>
-				<span ng-show="selectedScreen">{{selectedScreen.label}}</span>
+				<span ng-show="selectedScreen && selectedScreen.id != 'stockDetails'">{{selectedScreen.label}}</span>
+				<span ng-show="selectedStock && selectedScreen.id == 'stockDetails'">{{selectedStock.symbol}}</span>
 			</div>
 		</div>
 		<div ng-show="loading" class="content">
 			<img src="img/loader.gif" />
 		</div>
 		<div ng-show="!selectedScreen" class="content">
-			<div ng-repeat="menuItem in screens" class="menuItem" touch-action="selectScreen" touch-btn="{{menuItem}}">
+			<div ng-repeat="menuItem in screens" ng-show="menuItem.inMainMenu" class="menuItem" touch-action="selectScreen" touch-btn="{{menuItem}}">
 				{{menuItem.label}}
-				<div style="float: right">&#8250;</div>
+				<div class="menuArrow">&#8250;</div>
+			</div>
+		</div>
+		<div ng-show="selectedScreen.id == 'news'" class="content">
+			<div ng-repeat="newsItem in newsItems" touch-action="openLink" touch-btn="{{newsItem.link}}" class="listItem">
+				<img class="newsImage" ng-show="newsItem.image" ng-src="http:{{newsItem.image}}" />
+				<div class="listTitle">{{newsItem.title}}</div>
+				<div class="newsDate">{{newsItem.pubDate}}</div>
+				<p class="listContent" ng-show="newsItem.content">{{newsItem.content}}</p>
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'search'" class="content">
-			<input class="inputSearch" type="search" name="search" placeholder="Search" ng-model="searchStock" />
-			
+			<input class="inputSearch" type="search" name="search" placeholder="Type here to search" ng-model="searchStock" ng-change="searchChange()" />
+			<div ng-show="searchStock != '' && searchResults.length == 0" class="noResults">No results found</div>
+			<div ng-repeat="searchResult in searchResults" touch-action="selectStock" touch-btn="{{searchResult}}" class="listItem">
+				<div class="floatingBadge">{{searchResult.symbol}}</div>
+				<div class="listTitle">{{searchResult.name}}</div>
+				<div class="listContent"><b>Exchange: </b>{{searchResult.exchDisp || searchResult.exch}}</div>
+				<div class="listContent"><b>Type: </b>{{searchResult.typeDisp || searchResult.type}}</div>
+			</div>
 		</div>
-		<div ng-show="selectedScreen.id == 'news'" class="content">
-			<div ng-repeat="newsItem in newsItems" touch-action="openLink" touch-btn="{{newsItem.link}}" class="newsItem">
-				<img class="newsImage" ng-show="newsItem.image" ng-src="http:{{newsItem.image}}" />
-				<div class="newsTitle">{{newsItem.title}}</div>
-				<div class="newsDate">{{newsItem.pubDate}}</div>
-				<p class="newsContent" ng-show="newsItem.content">{{newsItem.content}}</p>
+		<div ng-show="selectedScreen.id == 'stockDetails'" class="content">
+			<div class="stockDetails">
+				<div style="background-color: #111111;">
+					<div style="float: right">({{selectedStock.exchDisp || selectedStock.exch}} - {{selectedStock.typeDisp || selectedStock.type}})</div>
+					<div class="listTitle">{{selectedStock.name}}</div>
+				</div>
+				<div>
+					&nbsp;
+				</div>
+				<div class="menutItem">
+					Chart
+					<div class="menuArrow">&#8250;</div>
+				</div>
+				<div class="menutItem">
+					News
+					<div class="menuArrow">&#8250;</div>
+				</div>
 			</div>
 		</div>
 	</div>

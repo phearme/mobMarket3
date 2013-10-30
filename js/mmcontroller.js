@@ -1,4 +1,5 @@
 ﻿/*jslint browser:true*/
+/*global NewsReader, YAHOO, YQuotes*/
 
 /*
 document.addEventListener("deviceready", function () {
@@ -13,14 +14,30 @@ document.addEventListener("deviceready", function () {
 		window.debugScope = $scope;
 		$scope.screens = [
 			{id: "search", label: "Search Quote", inMainMenu: true},
+			{id: "stockDetails", label: "", inMainMenu: false},
 			{id: "news", label: "Financial News", inMainMenu: true},
 			{id: "watchlist", label: "My Watch List", inMainMenu: true},
 			{id: "about", label: "About", inMainMenu: true}
 		];
 		$scope.loading = false;
 		$scope.selectedScreen = undefined;
+		$scope.selectedStock = undefined;
 		$scope.newsItems = [];
+		$scope.searchResults = [];
 		$scope.searchStock = "";
+		$scope.getQuoteTimeout = undefined;
+
+		// secure apply (prevent digest in progress collision)
+		$scope.safeApply = function (fn) {
+			var phase = this.$root.$$phase;
+			if (phase == "$apply" || phase == "$digest") {
+				if (fn && typeof fn === "function") {
+					fn();
+				}
+			} else {
+				this.$apply(fn);
+			}
+		};
 
 		// external links in default browser
 		$scope.openLink = function (link) {
@@ -28,7 +45,7 @@ document.addEventListener("deviceready", function () {
 		};
 
 		// simple screen navigation helpers
-		$scope.selectScreen = function (s) {
+		$scope.selectScreen = function (s, preserveContext) {
 			if (!s) {
 				$scope.selectedScreen = undefined;
 				return;
@@ -42,12 +59,23 @@ document.addEventListener("deviceready", function () {
 			case "news":
 				$scope.loading = true;
 				newsReader.getNews(undefined, function (items) {
-					$scope.$apply($scope.loading = false);
+					$scope.safeApply($scope.loading = false);
 					if (items && items.length > 0) {
-						$scope.$apply($scope.newsItems = items);
+						$scope.safeApply($scope.newsItems = items);
 					}
 				});
 				break;
+			case "search":
+				if (!preserveContext) {
+					$scope.safeApply(function () {
+						$scope.searchStock = "";
+						$scope.searchResults = [];
+					});
+				}
+				break;
+			}
+			if ($scope.selectedScreen.id !== "stockDetails") {
+				window.clearTimeout($scope.getQuoteTimeout);
 			}
 		};
 		$scope.goBack = function (f) {
@@ -57,12 +85,68 @@ document.addEventListener("deviceready", function () {
 				from = JSON.parse(f);
 			}
 			switch (from.id) {
+			case "stockDetails":
+				// todo: handle when stock is in watch list
+				$scope.screens.filter(function (s) {
+					return s.id === "search";
+				}).forEach(function (s) {
+					$scope.selectScreen(s, true);
+				});
+				break;
 			case "search":
 			case "news":
 			case "watchlist":
 			case "about":
 				$scope.selectScreen(undefined);
 				break;
+			}
+		};
+
+		// starts up fetching quotes data and set refresh frequency
+		$scope.fetchQuoteData = function () {
+			if ($scope.selectedStock) {
+				YQuotes.getQuote([$scope.selectedStock.symbol], function (data) {
+					console.log("get quote callback", data);
+					$scope.safeApply($scope.getQuoteTimeout = window.setTimeout($scope.fetchQuoteData, 4000));
+				});
+			}
+		};
+
+		// opens up the detail stock screen and starts up fetching quotes data
+		$scope.selectStock = function (stock) {
+			if (!stock) {
+				$scope.selectedScreen = undefined;
+				return;
+			}
+			if (typeof stock === "string") {
+				$scope.selectedStock = JSON.parse(stock);
+			} else if (typeof stock === "object") {
+				$scope.selectedStock = stock;
+			}
+			// fetch quotes
+			$scope.fetchQuoteData();
+
+			// show details screen
+			$scope.screens.filter(function (s) {
+				return s.id === "stockDetails";
+			}).forEach(function (s) {
+				$scope.selectScreen(s);
+			});
+		};
+
+		// triggered when search quote has changed
+		$scope.searchChange = function () {
+			if ($scope.searchStock !== "") {
+				YAHOO.search($scope.searchStock, function (data) {
+					if (data) {
+						//console.log(data);
+						$scope.safeApply($scope.searchResults = data);
+					} else {
+						$scope.safeApply($scope.searchResults = []);
+					}
+				});
+			} else {
+				$scope.safeApply($scope.searchResults = []);
 			}
 		};
 	})

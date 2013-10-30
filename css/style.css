@@ -31,12 +31,16 @@ body {
 	background-image: -webkit-linear-gradient(top, #545454, #111111);
 	-webkit-box-shadow: 0px 2px 3px #545454;
 	box-shadow: 0px 2px 3px #545454;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
 .backArrow {
 	float: left;
 	width: 16px;
 	font-size: 42px;
+	line-height: 40px;
 	color: #9A9A9A;
 }
 
@@ -74,7 +78,13 @@ body {
 	box-shadow: 0px 0px 2px #ffffff;
 }
 
-.newsItem {
+.menuArrow {
+	float: right;
+	font-size: 34px;
+	line-height: 24px;
+}
+
+.listItem {
 	overflow: hidden;
 	margin: 4px;
 	padding: 4px;
@@ -84,17 +94,17 @@ body {
 	-webkit-box-shadow: 0px 0px 1px #ffffff;
 }
 
-.newsTitle, .newsDate, .newsContent {
+.listTitle, .newsDate, .listContent {
 	text-align: left;
 }
-.newsTitle {
+.listTitle {
 	font-size: 18px;
 }
 .newsDate {
 	font-size: 10px;
 	color: #c0c0c0;
 }
-.newsContent {
+.listContent {
 	font-size: 14px;
 }
 .newsImage {
@@ -113,4 +123,21 @@ body {
 	height: 42px;
 	font-size: 24px;
 	-webkit-box-shadow: 0px 0px 2px #ffffff;
+}
+
+.noResults {
+	margin-top: 8px;
+	font-size: 18px;
+}
+
+.floatingBadge {
+	float: right;
+	background-color: #111111;
+	-webkit-border-radius: 2px;
+	-webkit-box-shadow: 0px 0px 1px #ffffff;
+	padding: 4px;
+}
+
+.stockDetails {
+	padding: 0px;
 }
