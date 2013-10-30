@@ -8,14 +8,8 @@ var YAHOO = {
 				+ "&nocache=" + (new Date()).getTime().toString(),
 			script = document.createElement("script");
 		this.searchCallback = callback;
-		try {
-			script.setAttribute("src", url);
-			document.getElementsByTagName("head")[0].appendChild(script);
-		} catch (e) {
-			if (typeof this.quotesCallback === "function") {
-				this.quotesCallback(false);
-			}
-		}
+		script.setAttribute("src", url);
+		document.getElementsByTagName("head")[0].appendChild(script);
 	},
 	Finance: { SymbolSuggest: { ssCallback: function (data) {
 		"use strict";

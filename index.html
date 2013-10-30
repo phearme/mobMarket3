@@ -57,21 +57,29 @@
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'stockDetails'" class="content">
-			<div class="stockDetails">
-				<div style="background-color: #111111;">
+			<div class="stockDetails" ng-show="selectedStock.stockData">
+				<div class="stockDetailsHead">
 					<div style="float: right">({{selectedStock.exchDisp || selectedStock.exch}} - {{selectedStock.typeDisp || selectedStock.type}})</div>
-					<div class="listTitle">{{selectedStock.name}}</div>
+					<div style="font-size: 18px;">{{selectedStock.name}}</div>
 				</div>
-				<div>
-					&nbsp;
+				<div class="listItem">
+					<table style="width: 100%; white-space: nowrap; table-layout: fixed;">
+						<tr ng-repeat="(key, val) in selectedStock.stockData" ng-show="val && val != 'N/A - N/A'">
+							<td style="width: 50%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{key}}</td>
+							<td style="width: 50%; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{val}}</td>
+						</tr>
+					</table>
 				</div>
-				<div class="menutItem">
-					Chart
-					<div class="menuArrow">&#8250;</div>
-				</div>
-				<div class="menutItem">
-					News
-					<div class="menuArrow">&#8250;</div>
+				<div class="stockDetailsFoot">
+					<div class="menutItem">
+						Chart
+						<div class="menuArrow">&#8250;</div>
+					</div>
+					<div class="menutItem">
+						News
+						<div class="menuArrow">&#8250;</div>
+					</div>
+					<br />
 				</div>
 			</div>
 		</div>

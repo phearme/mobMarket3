@@ -11,6 +11,7 @@ document.addEventListener("deviceready", function () {
 	// main controller
 	.controller("mmCtrl", function mmCtrl($scope) {
 		"use strict";
+		$scope.realTimeFrequency = 4500;
 		window.debugScope = $scope;
 		$scope.screens = [
 			{id: "search", label: "Search Quote", inMainMenu: true},
@@ -30,10 +31,8 @@ document.addEventListener("deviceready", function () {
 		// secure apply (prevent digest in progress collision)
 		$scope.safeApply = function (fn) {
 			var phase = this.$root.$$phase;
-			if (phase == "$apply" || phase == "$digest") {
-				if (fn && typeof fn === "function") {
-					fn();
-				}
+			if (phase && (phase.toString() === "$apply" || phase.toString() === "$digest")) {
+				if (typeof fn === "function") { fn(); }
 			} else {
 				this.$apply(fn);
 			}
@@ -50,18 +49,14 @@ document.addEventListener("deviceready", function () {
 				$scope.selectedScreen = undefined;
 				return;
 			}
-			if (typeof s === "string") {
-				$scope.selectedScreen = JSON.parse(s);
-			} else if (typeof s === "object") {
-				$scope.selectedScreen = s;
-			}
+			$scope.selectedScreen = typeof s === "string" ? JSON.parse(s) : s;
 			switch ($scope.selectedScreen.id) {
 			case "news":
 				$scope.loading = true;
 				newsReader.getNews(undefined, function (items) {
-					$scope.safeApply($scope.loading = false);
+					$scope.safeApply(function () { $scope.loading = false });
 					if (items && items.length > 0) {
-						$scope.safeApply($scope.newsItems = items);
+						$scope.safeApply(function () { $scope.newsItems = items });
 					}
 				});
 				break;
@@ -76,14 +71,13 @@ document.addEventListener("deviceready", function () {
 			}
 			if ($scope.selectedScreen.id !== "stockDetails") {
 				window.clearTimeout($scope.getQuoteTimeout);
+				$scope.getQuoteTimeout = $scope.selectedStock = undefined;
 			}
 		};
 		$scope.goBack = function (f) {
 			if (!f) { return; }
-			var from = f;
-			if (typeof f === "string") {
-				from = JSON.parse(f);
-			}
+			var from = typeof f === "string" ? JSON.parse(f) : f;
+			$scope.loading = false;
 			switch (from.id) {
 			case "stockDetails":
 				// todo: handle when stock is in watch list
@@ -106,8 +100,17 @@ document.addEventListener("deviceready", function () {
 		$scope.fetchQuoteData = function () {
 			if ($scope.selectedStock) {
 				YQuotes.getQuote([$scope.selectedStock.symbol], function (data) {
-					console.log("get quote callback", data);
-					$scope.safeApply($scope.getQuoteTimeout = window.setTimeout($scope.fetchQuoteData, 4000));
+					var stockData;
+					if (data && data.query && data.query.results && data.query.results.quote && $scope.selectedStock) {
+						$scope.safeApply(function () {
+							$scope.selectedStock.stockData = data.query.results.quote;
+							$scope.loading = false;
+							console.log($scope.selectedStock.stockData);
+						});
+					}
+				});
+				$scope.safeApply(function () {
+					$scope.getQuoteTimeout = window.setTimeout($scope.fetchQuoteData, $scope.realTimeFrequency);
 				});
 			}
 		};
@@ -118,11 +121,8 @@ document.addEventListener("deviceready", function () {
 				$scope.selectedScreen = undefined;
 				return;
 			}
-			if (typeof stock === "string") {
-				$scope.selectedStock = JSON.parse(stock);
-			} else if (typeof stock === "object") {
-				$scope.selectedStock = stock;
-			}
+			$scope.loading = true;
+			$scope.selectedStock = typeof stock === "string" ? JSON.parse(stock) : stock;
 			// fetch quotes
 			$scope.fetchQuoteData();
 
@@ -140,13 +140,13 @@ document.addEventListener("deviceready", function () {
 				YAHOO.search($scope.searchStock, function (data) {
 					if (data) {
 						//console.log(data);
-						$scope.safeApply($scope.searchResults = data);
+						$scope.safeApply(function () { $scope.searchResults = data });
 					} else {
-						$scope.safeApply($scope.searchResults = []);
+						$scope.safeApply(function () { $scope.searchResults = [] });
 					}
 				});
 			} else {
-				$scope.safeApply($scope.searchResults = []);
+				$scope.safeApply(function () { $scope.searchResults = [] });
 			}
 		};
 	})
