@@ -146,19 +146,41 @@ body {
 
 .stockDetailsHead {
 	margin: 4px;
+	padding: 4px;
 	background-color: #111111;
 	text-align: left;
 	-webkit-border-radius: 2px 2px 0px 0px;
 	overflow: hidden;
-	padding: 4px;
 	-webkit-box-shadow: 0px 1px 3px #000000;
 }
 
-.stockDetailsFoot {
+.toggleButton {
 	margin: 4px;
-	background-color: #111111;
-	-webkit-border-radius: 0px 0px 2px 2px;
-	overflow: hidden;
 	padding: 4px;
-	-webkit-box-shadow: 0px -1px 3px #000000;
+	background-color: #111111;
+	text-align: left;
+	-webkit-box-shadow: 0px 1px 3px #000000;
+}
+
+.dataTable {
+	width: 100%;
+	white-space: nowrap;
+	table-layout: fixed;
+}
+
+.dataLabel, .dataCell, .dataCellUp, .dataCellDown {
+	width: 50%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+	
+.dataCell, .dataCellUp, .dataCellDown {
+	font-weight: bold;
+}
+.dataCellUp {
+	color: #00ff00;
+}
+.dataCellDown {
+	color: #ff0000;
 }

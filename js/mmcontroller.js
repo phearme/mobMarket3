@@ -1,16 +1,16 @@
 ﻿/*jslint browser:true*/
 /*global NewsReader, YAHOO, YQuotes*/
 
-/*
+
 document.addEventListener("deviceready", function () {
 	"use strict";
-*/
+
 	var newsReader = new NewsReader();
 
-	angular.module("mmapp", [])
+	angular.module("mmapp", ["ngSanitize"])
 	// main controller
 	.controller("mmCtrl", function mmCtrl($scope) {
-		"use strict";
+		//"use strict";
 		$scope.realTimeFrequency = 4500;
 		window.debugScope = $scope;
 		$scope.screens = [
@@ -26,7 +26,9 @@ document.addEventListener("deviceready", function () {
 		$scope.newsItems = [];
 		$scope.searchResults = [];
 		$scope.searchStock = "";
+		$scope.stockDetailsTimerOn = false;
 		$scope.getQuoteTimeout = undefined;
+		$scope.showExtended = false;
 
 		// secure apply (prevent digest in progress collision)
 		$scope.safeApply = function (fn) {
@@ -45,18 +47,20 @@ document.addEventListener("deviceready", function () {
 
 		// simple screen navigation helpers
 		$scope.selectScreen = function (s, preserveContext) {
-			if (!s) {
-				$scope.selectedScreen = undefined;
+			var newsSearch;
+			if (!s || s === "") {
+				$scope.selectedScreen = $scope.selectedStock = undefined;
 				return;
 			}
 			$scope.selectedScreen = typeof s === "string" ? JSON.parse(s) : s;
 			switch ($scope.selectedScreen.id) {
 			case "news":
 				$scope.loading = true;
-				newsReader.getNews(undefined, function (items) {
-					$scope.safeApply(function () { $scope.loading = false });
+				newsSearch = $scope.selectedStock ? $scope.selectedStock.name : undefined;
+				newsReader.getNews(newsSearch, function (items) {
+					$scope.safeApply(function () { $scope.loading = false; });
 					if (items && items.length > 0) {
-						$scope.safeApply(function () { $scope.newsItems = items });
+						$scope.safeApply(function () { $scope.newsItems = items; });
 					}
 				});
 				break;
@@ -71,7 +75,8 @@ document.addEventListener("deviceready", function () {
 			}
 			if ($scope.selectedScreen.id !== "stockDetails") {
 				window.clearTimeout($scope.getQuoteTimeout);
-				$scope.getQuoteTimeout = $scope.selectedStock = undefined;
+				$scope.getQuoteTimeout = undefined;
+				$scope.stockDetailsTimerOn = false;
 			}
 		};
 		$scope.goBack = function (f) {
@@ -87,8 +92,14 @@ document.addEventListener("deviceready", function () {
 					$scope.selectScreen(s, true);
 				});
 				break;
-			case "search":
 			case "news":
+				if ($scope.selectedStock) {
+					$scope.selectStock($scope.selectedStock);
+				} else {
+					$scope.selectScreen(undefined);
+				}
+				break;
+			case "search":
 			case "watchlist":
 			case "about":
 				$scope.selectScreen(undefined);
@@ -98,7 +109,7 @@ document.addEventListener("deviceready", function () {
 
 		// starts up fetching quotes data and set refresh frequency
 		$scope.fetchQuoteData = function () {
-			if ($scope.selectedStock) {
+			if ($scope.stockDetailsTimerOn) {
 				YQuotes.getQuote([$scope.selectedStock.symbol], function (data) {
 					var stockData;
 					if (data && data.query && data.query.results && data.query.results.quote && $scope.selectedStock) {
@@ -124,6 +135,7 @@ document.addEventListener("deviceready", function () {
 			$scope.loading = true;
 			$scope.selectedStock = typeof stock === "string" ? JSON.parse(stock) : stock;
 			// fetch quotes
+			$scope.stockDetailsTimerOn = true;
 			$scope.fetchQuoteData();
 
 			// show details screen
@@ -138,16 +150,42 @@ document.addEventListener("deviceready", function () {
 		$scope.searchChange = function () {
 			if ($scope.searchStock !== "") {
 				YAHOO.search($scope.searchStock, function (data) {
-					if (data) {
-						//console.log(data);
-						$scope.safeApply(function () { $scope.searchResults = data });
-					} else {
-						$scope.safeApply(function () { $scope.searchResults = [] });
-					}
+					$scope.safeApply(function () {
+						$scope.searchResults = data || [];
+					});
 				});
 			} else {
-				$scope.safeApply(function () { $scope.searchResults = [] });
+				$scope.safeApply(function () { $scope.searchResults = []; });
 			}
+		};
+
+		$scope.selectedStockAction = function (action) {
+			switch (action) {
+			case "news":
+				$scope.screens.filter(function (s) {
+					return s.id === action;
+				}).forEach(function (s) {
+					$scope.selectScreen(s);
+				});
+				break;
+			}
+		};
+
+		$scope.toggleExtended = function () {
+			$scope.showExtended = !$scope.showExtended;
+		};
+
+		$scope.getDataCellClass = function (val) {
+			if (!val) {
+				return "dataCell";
+			}
+			if (val.indexOf("+") >= 0) {
+				return "dataCellUp";
+			}
+			if (val.indexOf("-") >= 0) {
+				return "dataCellDown";
+			}
+			return "dataCell";
 		};
 	})
 	// touch directive
@@ -180,6 +218,6 @@ document.addEventListener("deviceready", function () {
 			elm.addEventListener("touchstart", touchstartEvent);
 		};
 	});
-/*
+
 }, false);
-*/
+

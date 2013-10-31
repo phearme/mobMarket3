@@ -3,7 +3,7 @@ var NewsReader = (function () {
 	"use strict";
 
 	function NewsReader() {
-		this.rssUrl = "https://news.google.com/news/section?pz=1&cf=all&topic=b&output=rss";
+		this.rssUrl = "https://news.google.com/news/feeds?pz=1&cf=all&output=rss";
 	}
 
 	NewsReader.prototype._getNodeValue = function (xmlNode, tagName) {
@@ -26,9 +26,7 @@ var NewsReader = (function () {
 	NewsReader.prototype.getNews = function (search, callback) {
 		var xhr = new XMLHttpRequest(),
 			url = this.rssUrl + "&nocache=" + (new Date()).getTime().toString();
-		if (search) {
-			url += "&q=" + search;
-		}
+		url += search ? "&q=" + search : "&topic=b";
 		xhr.open("GET", url, true);
 		xhr.onreadystatechange = function () {
 			var data, itemNodes, items = [], i, j,
