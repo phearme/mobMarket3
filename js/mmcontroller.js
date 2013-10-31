@@ -1,16 +1,17 @@
 ﻿/*jslint browser:true*/
 /*global NewsReader, YAHOO, YQuotes*/
 
+var newsReader = new NewsReader();
 
 document.addEventListener("deviceready", function () {
 	"use strict";
+	//...
+}, false);
 
-	var newsReader = new NewsReader();
-
-	angular.module("mmapp", ["ngSanitize"])
+angular.module("mmapp", ["ngSanitize"])
 	// main controller
 	.controller("mmCtrl", function mmCtrl($scope) {
-		//"use strict";
+		"use strict";
 		$scope.realTimeFrequency = 4500;
 		window.debugScope = $scope;
 		$scope.screens = [
@@ -111,7 +112,6 @@ document.addEventListener("deviceready", function () {
 		$scope.fetchQuoteData = function () {
 			if ($scope.stockDetailsTimerOn) {
 				YQuotes.getQuote([$scope.selectedStock.symbol], function (data) {
-					var stockData;
 					if (data && data.query && data.query.results && data.query.results.quote && $scope.selectedStock) {
 						$scope.safeApply(function () {
 							$scope.selectedStock.stockData = data.query.results.quote;
@@ -218,6 +218,3 @@ document.addEventListener("deviceready", function () {
 			elm.addEventListener("touchstart", touchstartEvent);
 		};
 	});
-
-}, false);
-
