@@ -16,6 +16,13 @@ body {
 	color: #ffffff;
 }
 
+a {
+	color: #ffffff;
+	font-weight: bold;
+	text-shadow: 1px 1px 0px #000000;
+	text-decoration: none;
+}
+
 .header {
 	position: fixed;
 	width: 100%;
@@ -82,6 +89,10 @@ body {
 	float: right;
 	font-size: 34px;
 	line-height: 24px;
+}
+
+.extendArrow {
+	float: right;
 }
 
 .listItem {
