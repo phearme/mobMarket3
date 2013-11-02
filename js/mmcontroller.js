@@ -216,7 +216,9 @@ mmapp.directive("touchBtn", function () {
 
 document.addEventListener("deviceready", function () {
 	"use strict";
+	alert("device ready");
 	angular.element(document).ready(function () {
+		alert("angular dom ready");
 		angular.bootstrap(document, ["mmapp"]);
 	});
 }, false);
