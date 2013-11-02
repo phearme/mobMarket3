@@ -23,8 +23,8 @@
 				<span ng-hide="selectedScreen">
 					<span class="mobClass">mob</span><span class="marketClass">Market</span>
 				</span>
-				<span ng-show="selectedScreen && selectedScreen.id != 'stockDetails'">{{selectedScreen.label}}</span>
-				<span ng-show="selectedStock && selectedScreen.id == 'stockDetails'">{{selectedStock.symbol}}</span>
+				<span ng-show="selectedScreen && selectedScreen.id != 'stockDetails' && selectedScreen.id != 'chart'">{{selectedScreen.label}}</span>
+				<span ng-show="selectedStock && (selectedScreen.id == 'stockDetails' || selectedScreen.id == 'chart')">{{selectedStock.symbol}}</span>
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'about'" class="content">
@@ -41,7 +41,10 @@
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'watchlist'" class="content">
-			<div class="noResults">Your watch list is empty. Search for quotes and add a quote to your watch list.</div>
+			<div class="noResults">
+				Your watch list is empty.
+				<br />Search for quotes and add a quote to your watch list.
+			</div>
 		</div>
 		<div ng-show="loading" class="content">
 			<img src="img/loader.gif" />
@@ -137,7 +140,7 @@
 					</table>
 				</div>
 				<div class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="chart">
-					Chart
+					Historical Chart
 					<div class="menuArrow">&#8250;</div>
 				</div>
 				<div class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="news">
@@ -150,7 +153,15 @@
 				</div>
 			</div>
 		</div>
+		<div ng-show="selectedScreen.id == 'chart'" class="content">
+			<div class="stockDetailsHead">
+				<div style="float: right">({{selectedStock.exchDisp || selectedStock.exch}} - {{selectedStock.typeDisp || selectedStock.type}})</div>
+				<div style="font-size: 18px;">{{selectedStock.name}}</div>
+			</div>
+			<div class="chart" draw-canvas=""></div>
+		</div>
 	</div>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script type="text/javascript" src="js/angular.min.js"></script>
 	<script type="text/javascript" src="js/angular-sanitize.min.js"></script>
 	<script type="text/javascript" src="js/mmcontroller.js"></script>
