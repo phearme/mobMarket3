@@ -2,10 +2,10 @@
 /*global console, angular, NewsReader, YAHOO, YQuotes, google*/
 
 var newsReader = new NewsReader();
-/*
+
 document.addEventListener("deviceready", function () {
 	"use strict";
-*/
+
 var mmapp = angular.module("mmapp", ["ngSanitize"]);
 // main controller
 mmapp.controller("mmCtrl", function mmCtrl($scope) {
@@ -260,6 +260,5 @@ mmapp.directive("drawCanvas", function () {
 });
 
 angular.bootstrap(document, ["mmapp"]);
-/*
+
 }, false);
-*/
