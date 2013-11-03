@@ -210,7 +210,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	// handle device back button
 	document.addEventListener("backbutton", function () {
 		$scope.safeApply(function () {
-			$scope.goBack();
+			$scope.goBack($scope.selectedScreen);
 		});
 	}, false);
 
