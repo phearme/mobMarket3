@@ -11,8 +11,6 @@ google.setOnLoadCallback(function () {
 document.addEventListener("deviceready", function () {
 	"use strict";
 
-document.getElementById("screenMain").style.display = "block";
-
 var mmapp = angular.module("mmapp", ["ngSanitize"]);
 // main controller
 mmapp.controller("mmCtrl", function mmCtrl($scope) {
@@ -267,4 +265,5 @@ mmapp.directive("drawCanvas", function () {
 
 angular.bootstrap(document, ["mmapp"]);
 
+document.getElementById("screenMain").style.display = "block";
 }, false);
