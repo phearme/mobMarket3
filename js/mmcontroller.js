@@ -1,6 +1,6 @@
 ﻿/*jslint browser:true*/
 /*global console, angular, NewsReader, YAHOO, YQuotes, google*/
-
+try {
 var newsReader = new NewsReader();
 
 document.addEventListener("deviceready", function () {
@@ -215,12 +215,14 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	}, false);
 
 	// init google charts lib
+	/*
 	google.load("visualization", "1", {packages: ["corechart"]});
 	google.setOnLoadCallback(function () {
 		$scope.safeApply(function () {
 			$scope.googleChartReady = true;
 		});
 	});
+	*/
 });
 
 // touch directive
@@ -262,3 +264,6 @@ mmapp.directive("drawCanvas", function () {
 angular.bootstrap(document, ["mmapp"]);
 
 }, false);
+} catch (e) {
+	alert("error: " + e);
+}
