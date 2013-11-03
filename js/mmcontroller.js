@@ -265,5 +265,4 @@ mmapp.directive("drawCanvas", function () {
 
 angular.bootstrap(document, ["mmapp"]);
 
-document.getElementById("screenMain").style.display = "block";
 }, false);
