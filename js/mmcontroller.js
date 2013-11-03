@@ -1,10 +1,17 @@
 ﻿/*jslint browser:true*/
 /*global console, angular, NewsReader, YAHOO, YQuotes, google*/
-try {
-var newsReader = new NewsReader();
+var newsReader = new NewsReader(),
+	googleChartReady = false;
+
+google.load("visualization", "1", {packages: ["corechart"]});
+google.setOnLoadCallback(function () {
+	googleChartReady = true;
+});
 
 document.addEventListener("deviceready", function () {
 	"use strict";
+
+document.getElementById("screenMain").style.display = "block";
 
 var mmapp = angular.module("mmapp", ["ngSanitize"]);
 // main controller
@@ -35,7 +42,6 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.stockDetailsTimerOn = false;
 	$scope.getQuoteTimeout = undefined;
 	$scope.showExtended = false;
-	$scope.googleChartReady = false;
 	$scope.selectedHistory = "1w";
 
 	// secure apply (prevent digest in progress collision)
@@ -176,10 +182,18 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			YQuotes.getQuoteHistory($scope.selectedStock.symbol, $scope.chartLength[$scope.selectedHistory], function (data) {
 				console.log(data);
 				if (data && data.query && data.query.results && data.query.results.quote) {
-					//...
+					$scope.safeApply(function () {
+						//...
+						$scope.loading = false;
+					});
 				}
-				$scope.loading = false;
 			});
+			$scope.screens.filter(function (s) {
+				return s.id === action;
+			}).forEach(function (s) {
+				$scope.selectScreen(s);
+			});
+			break;
 		case "news":
 			$scope.screens.filter(function (s) {
 				return s.id === action;
@@ -213,16 +227,6 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			$scope.goBack($scope.selectedScreen);
 		});
 	}, false);
-
-	// init google charts lib
-	/*
-	google.load("visualization", "1", {packages: ["corechart"]});
-	google.setOnLoadCallback(function () {
-		$scope.safeApply(function () {
-			$scope.googleChartReady = true;
-		});
-	});
-	*/
 });
 
 // touch directive
@@ -264,6 +268,3 @@ mmapp.directive("drawCanvas", function () {
 angular.bootstrap(document, ["mmapp"]);
 
 }, false);
-} catch (e) {
-	alert("error: " + e);
-}
