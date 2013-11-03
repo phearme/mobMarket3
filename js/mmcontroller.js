@@ -41,6 +41,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.getQuoteTimeout = undefined;
 	$scope.showExtended = false;
 	$scope.selectedHistory = "1w";
+	$scope.dataTable = undefined;
 
 	// secure apply (prevent digest in progress collision)
 	$scope.safeApply = function (fn) {
@@ -178,13 +179,24 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		case "chart":
 			$scope.loading = true;
 			YQuotes.getQuoteHistory($scope.selectedStock.symbol, $scope.chartLength[$scope.selectedHistory], function (data) {
+				var dataTable = new google.visualization.DataTable(),
+					i,
+					tick,
+					dateTab;
+				dataTable.addColumn("date", "Date");
+				dataTable.addColumn("number", "Tick");
 				console.log(data);
 				if (data && data.query && data.query.results && data.query.results.quote) {
-					$scope.safeApply(function () {
-						//...
-						$scope.loading = false;
-					});
+					for (i = 0; i < data.query.results.quote.length; i += 1) {
+						tick = data.query.results.quote[i];
+						dateTab = tick.Date.split("-");
+						dataTable.addRow([new Date(dateTab[0], dateTab[1] - 1, dateTab[2]), window.parseFloat(tick.Close)]);
+					}
 				}
+				$scope.safeApply(function () {
+					$scope.dataTable = dataTable;
+					$scope.loading = false;
+				});
 			});
 			$scope.screens.filter(function (s) {
 				return s.id === action;
@@ -260,6 +272,28 @@ mmapp.directive("touchBtn", function () {
 // chart directive
 mmapp.directive("drawCanvas", function () {
 	return function (scope, element, attrs) {
+		scope.$watch("dataTable", function () {
+			var chartOptions = {
+					legend: {position: "none"},
+					backgroundColor: "#000000",
+					colors: ["#FFD800"],
+					hAxis: {
+						textStyle: {
+							color: "#ffffff"
+						}
+					},
+					vAxis: {
+						textStyle: {
+							color: "#ffffff"
+						}
+					}
+				},
+				chart;
+			if (googleChartReady && scope.dataTable) {
+				chart = new google.visualization.LineChart(element[0])
+				chart.draw(scope.dataTable, chartOptions);
+			}
+		});
 	};
 });
 

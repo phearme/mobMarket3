@@ -17,7 +17,7 @@ body {
 }
 
 a {
-	color: #ffffff;
+	color: #28E330;
 	font-weight: bold;
 	text-shadow: 1px 1px 0px #000000;
 	text-decoration: none;
@@ -188,6 +188,7 @@ a {
 	
 .dataCell, .dataCellUp, .dataCellDown {
 	font-weight: bold;
+	text-shadow: 1px 1px 0px #000000;
 }
 .dataCellUp {
 	color: #00ff00;
