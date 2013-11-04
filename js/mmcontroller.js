@@ -292,8 +292,9 @@ mmapp.directive("drawChart", function () {
 
 document.addEventListener("deviceready", function () {
 	"use strict";
-
+	console.log("deviceready");
 angular.element(document).ready(function () {
+	console.log("document ready");
 	angular.bootstrap(document, ["mmapp"]);
 });
 
