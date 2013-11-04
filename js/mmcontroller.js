@@ -1,19 +1,12 @@
 ﻿/*jslint browser:true*/
 /*global console, angular, NewsReader, YAHOO, YQuotes, google*/
 var newsReader = new NewsReader(),
+	mmapp = angular.module("mmapp", ["ngSanitize"]),
 	googleChartReady = false;
 
-google.load("visualization", "1", {packages: ["corechart"]});
-google.setOnLoadCallback(function () {
-	googleChartReady = true;
-});
-
-document.addEventListener("deviceready", function () {
-	"use strict";
-
-var mmapp = angular.module("mmapp", ["ngSanitize"]);
 // main controller
 mmapp.controller("mmCtrl", function mmCtrl($scope) {
+	"use strict";
 	$scope.realTimeFrequency = 4500;
 	window.debugScope = $scope;
 	$scope.screens = [
@@ -41,9 +34,9 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.getQuoteTimeout = undefined;
 	$scope.showExtended = false;
 	$scope.selectedHistory = "1w";
-	$scope.dataTable = undefined;
+	//$scope.dataTable = undefined;
 
-	// secure apply (prevent digest in progress collision)
+	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
 		var phase = this.$root.$$phase;
 		if (phase && (phase.toString() === "$apply" || phase.toString() === "$digest")) {
@@ -92,6 +85,16 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			$scope.stockDetailsTimerOn = false;
 		}
 	};
+
+	$scope.selectScreenById = function (id, preserveContext) {
+		$scope.screens.filter(function (s) {
+			return s.id === id;
+		}).forEach(function (s) {
+			$scope.selectScreen(s, preserveContext);
+			return;
+		});
+	};
+
 	$scope.goBack = function (f) {
 		if (!f) { return; }
 		var from = typeof f === "string" ? JSON.parse(f) : f;
@@ -99,11 +102,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		switch (from.id) {
 		case "stockDetails":
 			// todo: handle when stock is in watch list
-			$scope.screens.filter(function (s) {
-				return s.id === "search";
-			}).forEach(function (s) {
-				$scope.selectScreen(s, true);
-			});
+			$scope.selectScreenById("search", true);
 			break;
 		case "chart":
 			$scope.selectStock($scope.selectedStock);
@@ -154,11 +153,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		$scope.fetchQuoteData();
 
 		// show details screen
-		$scope.screens.filter(function (s) {
-			return s.id === "stockDetails";
-		}).forEach(function (s) {
-			$scope.selectScreen(s);
-		});
+		$scope.selectScreenById("stockDetails");
 	};
 
 	// triggered when search quote has changed
@@ -179,13 +174,14 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		case "chart":
 			$scope.loading = true;
 			YQuotes.getQuoteHistory($scope.selectedStock.symbol, $scope.chartLength[$scope.selectedHistory], function (data) {
+				console.log(data);
+				/*
 				var dataTable = new google.visualization.DataTable(),
 					i,
 					tick,
 					dateTab;
 				dataTable.addColumn("date", "Date");
 				dataTable.addColumn("number", "Tick");
-				console.log(data);
 				if (data && data.query && data.query.results && data.query.results.quote) {
 					for (i = 0; i < data.query.results.quote.length; i += 1) {
 						tick = data.query.results.quote[i];
@@ -193,23 +189,16 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 						dataTable.addRow([new Date(dateTab[0], dateTab[1] - 1, dateTab[2]), window.parseFloat(tick.Close)]);
 					}
 				}
+				*/
 				$scope.safeApply(function () {
-					$scope.dataTable = dataTable;
+					//$scope.dataTable = dataTable;
 					$scope.loading = false;
 				});
 			});
-			$scope.screens.filter(function (s) {
-				return s.id === action;
-			}).forEach(function (s) {
-				$scope.selectScreen(s);
-			});
+			$scope.selectScreenById(action);
 			break;
 		case "news":
-			$scope.screens.filter(function (s) {
-				return s.id === action;
-			}).forEach(function (s) {
-				$scope.selectScreen(s);
-			});
+			$scope.selectScreenById(action);
 			break;
 		}
 	};
@@ -241,6 +230,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 
 // touch directive
 mmapp.directive("touchBtn", function () {
+	"use strict";
 	return function (scope, element, attrs) {
 		var elm = element[0],
 			touchstartEvent,
@@ -270,9 +260,11 @@ mmapp.directive("touchBtn", function () {
 });
 
 // chart directive
-mmapp.directive("drawCanvas", function () {
+mmapp.directive("drawChart", function () {
+	"use strict";
 	return function (scope, element, attrs) {
 		scope.$watch("dataTable", function () {
+			/*
 			var chartOptions = {
 					legend: {position: "none"},
 					backgroundColor: "#000000",
@@ -293,10 +285,16 @@ mmapp.directive("drawCanvas", function () {
 				chart = new google.visualization.LineChart(element[0])
 				chart.draw(scope.dataTable, chartOptions);
 			}
+			*/
 		});
 	};
 });
 
-angular.bootstrap(document, ["mmapp"]);
+document.addEventListener("deviceready", function () {
+	"use strict";
+
+angular.element(document).ready(function () {
+	angular.bootstrap(document, ["mmapp"]);
+});
 
 }, false);
