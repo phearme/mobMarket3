@@ -6,6 +6,7 @@ var newsReader = new NewsReader(),
 // main controller
 mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	"use strict";
+	var i;
 	$scope.realTimeFrequency = 4500;
 	window.debugScope = $scope;
 	$scope.screens = [
@@ -23,6 +24,15 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		"6m": 180,
 		"1y": 365
 	};
+	$scope.chartLengthOrdered = [];
+	for (i in $scope.chartLength) {
+		if ($scope.chartLength.hasOwnProperty(i)) {
+			$scope.chartLengthOrdered.push({key: i, value: $scope.chartLength[i]});
+		}
+	}
+	$scope.chartLengthOrdered.sort(function (a, b) {
+		return a.value < b.value ? -1 : 1;
+	});
 	$scope.loading = false;
 	$scope.selectedScreen = undefined;
 	$scope.selectedStock = undefined;

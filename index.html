@@ -165,7 +165,7 @@
 				<div style="font-size: 18px;">{{selectedStock.name}}</div>
 			</div>
 			<div class="chartButtons">
-				<div ng-repeat="(key, val) in chartLength" ng-class="getChartButtonClass(key)" touch-btn="{{key}}" touch-action="setChartLength">{{key}}</div>
+				<div ng-repeat="lengthItem in chartLengthOrdered" ng-class="getChartButtonClass(lengthItem.key)" touch-btn="{{lengthItem.key}}" touch-action="setChartLength">{{lengthItem.key}}</div>
 			</div>
 			<div id="divChart" class="chart" draw-chart=""></div>
 		</div>
