@@ -1,8 +1,7 @@
 ﻿/*jslint browser:true*/
 /*global console, angular, NewsReader, YAHOO, YQuotes, google*/
 var newsReader = new NewsReader(),
-	mmapp = angular.module("mmapp", ["ngSanitize"]),
-	googleChartReady = false;
+	mmapp = angular.module("mmapp", ["ngSanitize"]);
 
 // main controller
 mmapp.controller("mmCtrl", function mmCtrl($scope) {
@@ -33,8 +32,9 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.stockDetailsTimerOn = false;
 	$scope.getQuoteTimeout = undefined;
 	$scope.showExtended = false;
-	$scope.selectedHistory = "1w";
-	//$scope.dataTable = undefined;
+	$scope.selectedHistory = "1m";
+	$scope.chartData = [[]];
+	$scope.chart = undefined;
 
 	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
@@ -169,38 +169,50 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		}
 	};
 
+	$scope.fetchHistoryData = function () {
+		$scope.safeApply(function () {
+			$scope.chartData = [[]];
+		});
+		YQuotes.getQuoteHistory($scope.selectedStock.symbol, $scope.chartLength[$scope.selectedHistory], function (data) {
+			console.log(data);
+			var chartData = [[]],
+				i,
+				tick,
+				dateTab;
+			if (data && data.query && data.query.results && data.query.results.quote) {
+				for (i = 0; i < data.query.results.quote.length; i += 1) {
+					tick = data.query.results.quote[i];
+					dateTab = tick.Date ? tick.Date.split("-") : tick.col0.split("-");
+					chartData.push([new Date(dateTab[0], dateTab[1] - 1, dateTab[2]).getTime(), window.parseFloat(tick.Close || tick.col1)]);
+				}
+				$scope.safeApply(function () {
+					$scope.chartData = chartData;
+					$scope.loading = false;
+				});
+			} else {
+				// try again
+				$scope.fetchHistoryData();
+			}
+		});
+	};
+
 	$scope.selectedStockAction = function (action) {
 		switch (action) {
 		case "chart":
 			$scope.loading = true;
-			YQuotes.getQuoteHistory($scope.selectedStock.symbol, $scope.chartLength[$scope.selectedHistory], function (data) {
-				console.log(data);
-				/*
-				var dataTable = new google.visualization.DataTable(),
-					i,
-					tick,
-					dateTab;
-				dataTable.addColumn("date", "Date");
-				dataTable.addColumn("number", "Tick");
-				if (data && data.query && data.query.results && data.query.results.quote) {
-					for (i = 0; i < data.query.results.quote.length; i += 1) {
-						tick = data.query.results.quote[i];
-						dateTab = tick.Date.split("-");
-						dataTable.addRow([new Date(dateTab[0], dateTab[1] - 1, dateTab[2]), window.parseFloat(tick.Close)]);
-					}
-				}
-				*/
-				$scope.safeApply(function () {
-					//$scope.dataTable = dataTable;
-					$scope.loading = false;
-				});
-			});
+			$scope.fetchHistoryData();
 			$scope.selectScreenById(action);
 			break;
 		case "news":
 			$scope.selectScreenById(action);
 			break;
 		}
+	};
+
+	$scope.setChartLength = function (length) {
+		$scope.loading = true;
+		$scope.selectedHistory = length;
+		$scope.fetchHistoryData();
 	};
 
 	$scope.toggleExtended = function () {
@@ -218,6 +230,10 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			return "dataCellDown";
 		}
 		return "dataCell";
+	};
+
+	$scope.getChartButtonClass = function (key) {
+		return key === $scope.selectedHistory ? "chartButtonSelected" : "chartButton";
 	};
 
 	// handle device back button
@@ -263,29 +279,23 @@ mmapp.directive("touchBtn", function () {
 mmapp.directive("drawChart", function () {
 	"use strict";
 	return function (scope, element, attrs) {
-		scope.$watch("dataTable", function () {
-			/*
-			var chartOptions = {
-					legend: {position: "none"},
-					backgroundColor: "#000000",
-					colors: ["#FFD800"],
-					hAxis: {
-						textStyle: {
-							color: "#ffffff"
-						}
-					},
-					vAxis: {
-						textStyle: {
-							color: "#ffffff"
+		scope.$watch("chartData", function () {
+			scope.safeApply(function () {
+				scope.chart = $.plot(
+					$("#divChart"),
+					[{data: scope.chartData, lines: {show: true}}],
+					{
+						xaxis: {mode: "time", show: true, font: {color: "#ffffff"}},
+						yaxis: {show: true, font: {color: "#ffffff"}},
+						grid: {
+							backgroundColor: {colors: ["#606060", "#000000"]},
+							minBorderMargin: 2,
+							borderWidth: 1,
+							axisMargin: 4
 						}
 					}
-				},
-				chart;
-			if (googleChartReady && scope.dataTable) {
-				chart = new google.visualization.LineChart(element[0])
-				chart.draw(scope.dataTable, chartOptions);
-			}
-			*/
+				);
+			});
 		});
 	};
 });
