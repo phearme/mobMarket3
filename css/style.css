@@ -57,6 +57,13 @@ a {
 	padding-bottom: 8px;
 }
 
+.overlay {
+	position: absolute;
+	text-align: center;
+	width: 100%;
+	z-index: 99;
+}
+
 .mobClass, .marketClass {
 	float: left;
 	line-height: 48px;
@@ -224,3 +231,18 @@ a {
 	background-color: #444444;
 	background-image: -webkit-linear-gradient(top, #545454, #444444);
 }
+
+.bottomAdSpacer {
+	height: 60px;
+}
+
+.bottomAd {
+	position: fixed;
+	bottom: 0px;
+	width: 100%;
+	text-align: center;
+}
+
+.mobmarket3 { width: 320px; height: 50px; }
+@media(min-width: 500px) { .mobmarket3 { width: 468px; height: 60px; } }
+@media(min-width: 800px) { .mobmarket3 { width: 728px; height: 90px; } }

@@ -8,6 +8,7 @@
 	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
 	<title>mobMarket</title>
 	<script type="text/javascript" src="phonegap.js"></script>
+	<script type="text/javascript" src="js/json2.min.js"></script>
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="js/jquery.flot.min.js"></script>
@@ -16,6 +17,7 @@
 	<script type="text/javascript" src="js/newsreader.js"></script>
 	<script type="text/javascript" src="js/ysearch.js"></script>
 	<script type="text/javascript" src="js/yquotes.js"></script>
+	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 <body ng-controller="mmCtrl">
 	<div id="screenMain" ng-cloak>
@@ -33,6 +35,9 @@
 				<span ng-show="selectedStock && (selectedScreen.id == 'stockDetails' || selectedScreen.id == 'chart')">{{selectedStock.symbol}}</span>
 			</div>
 		</div>
+		<div ng-show="loading" class="content overlay">
+			<img src="img/loader.gif" />
+		</div>
 		<div ng-show="selectedScreen.id == 'about'" class="content">
 			<div style="text-align: left; margin: 12px;">
 				<div style="float: left;">
@@ -45,20 +50,60 @@
 					<a href="mailto:raphael.cohen@gmail.com">raphael.cohen@gmail.com</a></p>
 				</div>
 			</div>
+			<div class="bottomAdSpacer"></div>
+			<div class="bottomAd">
+				<!-- mobMarket3 -->
+				<ins class="adsbygoogle mobmarket3"
+					 style="display:inline-block"
+					 data-ad-client="ca-pub-6377792279283816"
+					 data-ad-slot="2985742807"></ins>
+				<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+				</script>
+			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'watchlist'" class="content">
-			<div class="noResults">
+			<div class="noResults" ng-show="watchlist.length == 0">
 				Your watch list is empty.
 				<br />Search for quotes and add a quote to your watch list.
 			</div>
-		</div>
-		<div ng-show="loading" class="content">
-			<img src="img/loader.gif" />
+			<div ng-repeat="stock in watchlist" class="listItem" touch-action="selectStock" touch-btn="{{stock}}">
+				<div class="floatingBadge">{{stock.symbol}}</div>
+				<div class="listTitle">{{stock.name}}</div>
+				<table class="dataTable">
+					<tr>
+						<td class="dataLabel" style="text-align: left;">Last</td>
+						<td ng-class="getDataCellClass(stock.stockData.ChangeRealtime)" style="text-align: right; color: {{}}">
+							{{stock.stockData.LastTradePriceOnly}}
+							<span ng-show="stock.stockData.ChangeRealtime && stock.stockData.ChangeRealtime.indexOf('+') >= 0">&#8599;</span>
+							<span ng-show="stock.stockData.ChangeRealtime && stock.stockData.ChangeRealtime.indexOf('-') >= 0">&#8600;</span>
+						</td>
+					</tr>
+					<tr>
+						<td class="dataLabel" style="text-align: left;">Change</td>
+						<td ng-class="getDataCellClass(stock.stockData.ChangeRealtime)" style="text-align: right;">
+							{{stock.stockData.ChangeRealtime}}
+							{{stock.stockData.ChangeinPercent}}
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
 		<div ng-show="!selectedScreen" class="content">
 			<div ng-repeat="menuItem in screens" ng-show="menuItem.inMainMenu" class="menuItem" touch-action="selectScreen" touch-btn="{{menuItem}}">
 				{{menuItem.label}}
 				<div class="menuArrow">&#8250;</div>
+			</div>
+			<div class="bottomAdSpacer"></div>
+			<div class="bottomAd">
+				<!-- mobMarket3 -->
+				<ins class="adsbygoogle mobmarket3"
+					 style="display:inline-block"
+					 data-ad-client="ca-pub-6377792279283816"
+					 data-ad-slot="2985742807"></ins>
+				<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+				</script>
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'news'" class="content">
@@ -153,8 +198,12 @@
 					News
 					<div class="menuArrow">&#8250;</div>
 				</div>
-				<div class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="watchlist">
+				<div ng-hide="isInWatchList(selectedStock.symbol)" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="watchlist">
 					Add to Watch List
+					<div class="menuArrow">&#8250;</div>
+				</div>
+				<div ng-show="isInWatchList(selectedStock.symbol)" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="watchlist">
+					Remove from Watch List
 					<div class="menuArrow">&#8250;</div>
 				</div>
 			</div>
@@ -167,7 +216,7 @@
 			<div class="chartButtons">
 				<div ng-repeat="lengthItem in chartLengthOrdered" ng-class="getChartButtonClass(lengthItem.key)" touch-btn="{{lengthItem.key}}" touch-action="setChartLength">{{lengthItem.key}}</div>
 			</div>
-			<div id="divChart" class="chart" draw-chart=""></div>
+			<div ng-hide="loading" id="divChart" class="chart" draw-chart=""></div>
 		</div>
 	</div>
 	<script type="text/javascript" src="js/angular.min.js"></script>

@@ -1,5 +1,5 @@
 ﻿/*jslint browser:true*/
-/*global console, angular, NewsReader, YAHOO, YQuotes, google*/
+/*global console, angular, NewsReader, YAHOO, YQuotes, google, $*/
 var newsReader = new NewsReader(),
 	mmapp = angular.module("mmapp", ["ngSanitize"]);
 
@@ -13,7 +13,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		{id: "search", label: "Search Quote", inMainMenu: true},
 		{id: "stockDetails", label: "", inMainMenu: false},
 		{id: "news", label: "Financial News", inMainMenu: true},
-		{id: "watchlist", label: "My Watch List", inMainMenu: true},
+		{id: "watchlist", label: "Watch List", inMainMenu: true},
 		{id: "about", label: "About", inMainMenu: true},
 		{id: "chart", label: "", inMainMenu: false}
 	];
@@ -40,11 +40,17 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.searchResults = [];
 	$scope.searchStock = "";
 	$scope.stockDetailsTimerOn = false;
+	$scope.watchlistTimerOn = false;
 	$scope.getQuoteTimeout = undefined;
+	$scope.watchlistTimeout = undefined;
 	$scope.showExtended = false;
 	$scope.selectedHistory = "1m";
 	$scope.chartData = [[]];
 	$scope.chart = undefined;
+	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
+	if ($scope.watchlist.length === 0) {
+		$scope.watchlist = $scope.previousVersionWatchlist();
+	}
 
 	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
@@ -88,6 +94,13 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 				});
 			}
 			break;
+		case "watchlist":
+			if ($scope.watchlist.length > 0) {
+				$scope.loading = true;
+			}
+			$scope.watchlistTimerOn = true;
+			$scope.fetchWatchListData();
+			break;
 		}
 		if ($scope.selectedScreen.id !== "stockDetails") {
 			window.clearTimeout($scope.getQuoteTimeout);
@@ -111,8 +124,11 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		$scope.loading = false;
 		switch (from.id) {
 		case "stockDetails":
-			// todo: handle when stock is in watch list
-			$scope.selectScreenById("search", true);
+			if ($scope.selectedStock && $scope.isInWatchList($scope.selectedStock.symbol)) {
+				$scope.selectScreenById("watchlist");
+			} else {
+				$scope.selectScreenById("search", true);
+			}
 			break;
 		case "chart":
 			$scope.selectStock($scope.selectedStock);
@@ -124,8 +140,13 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 				$scope.selectScreen(undefined);
 			}
 			break;
-		case "search":
 		case "watchlist":
+			window.clearTimeout($scope.watchlistTimeout);
+			$scope.watchlistTimeout = undefined;
+			$scope.watchlistTimerOn = false;
+			$scope.selectScreen(undefined);
+			break;
+		case "search":
 		case "about":
 			$scope.selectScreen(undefined);
 			break;
@@ -146,6 +167,45 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			});
 			$scope.safeApply(function () {
 				$scope.getQuoteTimeout = window.setTimeout($scope.fetchQuoteData, $scope.realTimeFrequency);
+			});
+		}
+	};
+
+	// fetches quotes data for watchlist
+	$scope.fetchWatchListData = function () {
+		var watchlistSymbols = [], i;
+		if ($scope.watchlistTimerOn) {
+			for (i = 0; i < $scope.watchlist.length; i += 1) {
+				watchlistSymbols.push($scope.watchlist[i].symbol);
+			}
+			if (watchlistSymbols.length > 0) {
+				YQuotes.getQuote(watchlistSymbols, function (data) {
+					var j, k;
+					console.log(data);
+					if (data && data.query && data.query.count && data.query.results && data.query.results.quote) {
+						$scope.safeApply(function () {
+							if (data.query.count === 1) {
+								for (j = 0; j < $scope.watchlist.length; j += 1) {
+									if ($scope.watchlist[j].symbol === data.query.results.quote.symbol) {
+										$scope.watchlist[j].stockData = data.query.results.quote;
+									}
+								}
+							} else if (data.query.count > 1) {
+								for (k = 0; k < data.query.results.quote.length; k += 1) {
+									for (j = 0; j < $scope.watchlist.length; j += 1) {
+										if ($scope.watchlist[j].symbol === data.query.results.quote[k].symbol) {
+											$scope.watchlist[j].stockData = data.query.results.quote[k];
+										}
+									}
+								}
+							}
+							$scope.loading = false;
+						});
+					}
+				});
+			}
+			$scope.safeApply(function () {
+				$scope.watchlistTimeout = window.setTimeout($scope.fetchWatchListData, $scope.realTimeFrequency);
 			});
 		}
 	};
@@ -206,7 +266,18 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		});
 	};
 
+	$scope.isInWatchList = function (symbol) {
+		var i;
+		for (i = 0; i < $scope.watchlist.length; i += 1) {
+			if ($scope.watchlist[i].symbol === symbol) {
+				return true;
+			}
+		}
+		return false;
+	};
+
 	$scope.selectedStockAction = function (action) {
+		var i;
 		switch (action) {
 		case "chart":
 			$scope.loading = true;
@@ -215,6 +286,23 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			break;
 		case "news":
 			$scope.selectScreenById(action);
+			break;
+		case "watchlist":
+			if ($scope.isInWatchList($scope.selectedStock.symbol)) {
+				$scope.safeApply(function () {
+					i = $scope.watchlist.length - 1;
+					while (i >= 0) {
+						if ($scope.watchlist[i].symbol === $scope.selectedStock.symbol) {
+							$scope.watchlist.splice(i, 1);
+						}
+						i -= 1;
+					}
+				});
+			} else {
+				$scope.safeApply(function () { $scope.watchlist.push($scope.selectedStock); });
+			}
+			window.localStorage.setItem("watchlist", JSON.stringify($scope.watchlist));
+			$scope.selectScreenById("watchlist");
 			break;
 		}
 	};
@@ -244,6 +332,19 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 
 	$scope.getChartButtonClass = function (key) {
 		return key === $scope.selectedHistory ? "chartButtonSelected" : "chartButton";
+	};
+
+	$scope.previousVersionWatchlist = function () {
+		var wlSymbols = [], i, glob_watchListPrefix = "watch://", data;
+		for (i = 0; i < window.localStorage.length; i += 1) {
+			if (window.localStorage.key(i).indexOf(glob_watchListPrefix) >= 0) {
+				data = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
+				if (data && data.symbol && data.title) {
+					wlSymbols.push({symbol: data.symbol, name: data.title});
+				}
+			}
+		}
+		return wlSymbols;
 	};
 
 	// handle device back button
