@@ -444,6 +444,7 @@ mmapp.directive("drawChart", function () {
 	};
 });
 
+
 document.addEventListener("deviceready", function () {
 	"use strict";
 
