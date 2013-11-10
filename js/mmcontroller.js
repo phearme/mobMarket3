@@ -451,3 +451,9 @@ document.addEventListener("deviceready", function () {
 	angular.bootstrap(document, ["mmapp"]);
 
 }, false);
+
+$(document).on('click', 'a[href^=http], a[href^=https]', function(e) {
+	e.preventDefault();
+	var $this = $(this);
+	window.open($this.attr("href"), "_system");
+});
