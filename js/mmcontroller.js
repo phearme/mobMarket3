@@ -1,6 +1,5 @@
 ﻿/*jslint browser:true*/
 /*global console, angular, NewsReader, YAHOO, YQuotes, google, $*/
-try {
 var newsReader = new NewsReader(),
 	mmapp = angular.module("mmapp", ["ngSanitize"]);
 
@@ -343,6 +342,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 
 	$scope.previousVersionWatchlist = function () {
 		var wlSymbols = [], i, glob_watchListPrefix = "watch://", data;
+		/*
 		try {
 			for (i = 0; i < window.localStorage.length; i += 1) {
 				if (window.localStorage.key(i).indexOf(glob_watchListPrefix) >= 0) {
@@ -356,6 +356,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			console.log(e);
 			wlSymbols = [];
 		}
+		*/
 		return wlSymbols;
 	};
 
@@ -429,6 +430,3 @@ document.addEventListener("deviceready", function () {
 	angular.bootstrap(document, ["mmapp"]);
 
 }, false);
-} catch (e1) {
-	alert(e1);
-}
