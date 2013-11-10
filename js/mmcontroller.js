@@ -48,15 +48,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.chartData = [[]];
 	$scope.chart = undefined;
 	$scope.watchlist = [];
-	try {
-		$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
-	} catch (e) {
-		console.log(e);
-		$scope.watchlist = [];
-	}
-	if ($scope.watchlist.length === 0) {
-		$scope.watchlist = $scope.previousVersionWatchlist();
-	}
+	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
 
 	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
@@ -342,7 +334,6 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 
 	$scope.previousVersionWatchlist = function () {
 		var wlSymbols = [], i, glob_watchListPrefix = "watch://", data;
-		/*
 		try {
 			for (i = 0; i < window.localStorage.length; i += 1) {
 				if (window.localStorage.key(i).indexOf(glob_watchListPrefix) >= 0) {
@@ -356,9 +347,12 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			console.log(e);
 			wlSymbols = [];
 		}
-		*/
 		return wlSymbols;
 	};
+
+	if ($scope.watchlist.length === 0) {
+		$scope.watchlist = $scope.previousVersionWatchlist();
+	}
 
 	// handle device back button
 	document.addEventListener("backbutton", function () {
