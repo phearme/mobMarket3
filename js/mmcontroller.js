@@ -47,9 +47,14 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.selectedHistory = "1m";
 	$scope.chartData = [[]];
 	$scope.chart = undefined;
-	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
+	try {
+		$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
+	} catch (e) {
+		console.log(e);
+		$scope.watchlist = [];
+	}
 	if ($scope.watchlist.length === 0) {
-		//$scope.watchlist = $scope.previousVersionWatchlist();
+		$scope.watchlist = $scope.previousVersionWatchlist();
 	}
 
 	// secure apply (prevent "digest in progress" collision)
@@ -338,7 +343,11 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		var wlSymbols = [], i, glob_watchListPrefix = "watch://", data;
 		for (i = 0; i < window.localStorage.length; i += 1) {
 			if (window.localStorage.key(i).indexOf(glob_watchListPrefix) >= 0) {
-				data = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
+				try {
+					data = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
+				} catch (e) {
+					console.log(e);
+				}
 				if (data && data.symbol && data.title) {
 					wlSymbols.push({symbol: data.symbol, name: data.title});
 				}
