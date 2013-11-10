@@ -49,7 +49,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.chart = undefined;
 	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
 	if ($scope.watchlist.length === 0) {
-		$scope.watchlist = $scope.previousVersionWatchlist();
+		//$scope.watchlist = $scope.previousVersionWatchlist();
 	}
 
 	// secure apply (prevent "digest in progress" collision)
