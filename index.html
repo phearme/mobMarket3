@@ -35,10 +35,10 @@
 				<span ng-show="selectedStock && (selectedScreen.id == 'stockDetails' || selectedScreen.id == 'chart')">{{selectedStock.symbol}}</span>
 			</div>
 		</div>
-		<div ng-show="loading" class="content overlay">
+		<div ng-show="loading" class="content overlay" ng-cloak>
 			<img src="img/loader.gif" />
 		</div>
-		<div ng-show="selectedScreen.id == 'about'" class="content">
+		<div ng-show="selectedScreen.id == 'about'" class="content" ng-cloak>
 			<div style="text-align: left; margin: 12px;">
 				<div style="float: left;">
 					<span class="mobClass">mob</span><span class="marketClass">Market</span>
@@ -51,7 +51,7 @@
 				</div>
 			</div>
 		</div>
-		<div ng-show="selectedScreen.id == 'watchlist'" class="content">
+		<div ng-show="selectedScreen.id == 'watchlist'" class="content" ng-cloak>
 			<div class="noResults" ng-show="watchlist.length == 0">
 				Your watch list is empty.
 				<br />Search for quotes and add a quote to your watch list.
@@ -95,7 +95,7 @@
 				</script>
 			</div>
 		</div>
-		<div ng-show="selectedScreen.id == 'news'" class="content">
+		<div ng-show="selectedScreen.id == 'news'" class="content" ng-cloak>
 			<div ng-repeat="newsItem in newsItems" touch-action="openLink" touch-btn="{{newsItem.link}}" class="listItem">
 				<img class="newsImage" ng-show="newsItem.image" ng-src="http:{{newsItem.image}}" />
 				<div class="listTitle">{{newsItem.title}}</div>
@@ -103,7 +103,7 @@
 				<p class="listContent" ng-show="newsItem.content">{{newsItem.content}}</p>
 			</div>
 		</div>
-		<div ng-show="selectedScreen.id == 'search'" class="content">
+		<div ng-show="selectedScreen.id == 'search'" class="content" ng-cloak>
 			<input class="inputSearch" type="search" name="search" placeholder="Type here to search" ng-model="searchStock" ng-change="searchChange()" />
 			<div ng-show="searchStock != '' && searchResults.length == 0" class="noResults">No results found</div>
 			<div ng-repeat="searchResult in searchResults" touch-action="selectStock" touch-btn="{{searchResult}}" class="listItem">
@@ -113,7 +113,7 @@
 				<div class="listContent"><b>Type: </b>{{searchResult.typeDisp || searchResult.type}}</div>
 			</div>
 		</div>
-		<div ng-show="selectedScreen.id == 'stockDetails'" class="content">
+		<div ng-show="selectedScreen.id == 'stockDetails'" class="content" ng-cloak>
 			<div class="stockDetails" ng-show="selectedStock.stockData">
 				<div class="stockDetailsHead">
 					<div style="float: right">({{selectedStock.exchDisp || selectedStock.exch}} - {{selectedStock.typeDisp || selectedStock.type}})</div>
@@ -197,7 +197,7 @@
 				</div>
 			</div>
 		</div>
-		<div ng-show="selectedScreen.id == 'chart'" class="content">
+		<div ng-show="selectedScreen.id == 'chart'" class="content" ng-cloak>
 			<div class="stockDetailsHead">
 				<div style="float: right">({{selectedStock.exchDisp || selectedStock.exch}} - {{selectedStock.typeDisp || selectedStock.type}})</div>
 				<div style="font-size: 18px;">{{selectedStock.name}}</div>

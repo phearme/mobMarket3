@@ -122,7 +122,10 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	};
 
 	$scope.goBack = function (f) {
-		if (!f) { return; }
+		if (!f) {
+			$scope.selectScreen(undefined);
+			return;
+		}
 		var from = typeof f === "string" ? JSON.parse(f) : f;
 		$scope.loading = false;
 		switch (from.id) {
@@ -371,6 +374,18 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			$scope.goBack($scope.selectedScreen);
 		});
 	}, false);
+
+	document.addEventListener("menubutton", function () {
+		$scope.safeApply(function () {
+			$scope.selectScreen(undefined);
+		});
+	});
+
+	document.addEventListener("searchbutton", function () {
+		$scope.safeApply(function () {
+			$scope.selectScreenById("search");
+		});
+	});
 });
 
 // touch directive
