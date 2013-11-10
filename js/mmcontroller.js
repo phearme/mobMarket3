@@ -1,5 +1,6 @@
 ﻿/*jslint browser:true*/
 /*global console, angular, NewsReader, YAHOO, YQuotes, google, $*/
+try {
 var newsReader = new NewsReader(),
 	mmapp = angular.module("mmapp", ["ngSanitize"]);
 
@@ -345,13 +346,12 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		try {
 			for (i = 0; i < window.localStorage.length; i += 1) {
 				if (window.localStorage.key(i).indexOf(glob_watchListPrefix) >= 0) {
-					
-						data = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
+					data = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
 					if (data && data.symbol && data.title) {
 						wlSymbols.push({symbol: data.symbol, name: data.title});
 					}
 				}
-			}		
+			}
 		} catch (e) {
 			console.log(e);
 			wlSymbols = [];
@@ -429,3 +429,6 @@ document.addEventListener("deviceready", function () {
 	angular.bootstrap(document, ["mmapp"]);
 
 }, false);
+} catch (e1) {
+	alert(e1);
+}
