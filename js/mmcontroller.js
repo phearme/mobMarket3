@@ -48,7 +48,6 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.chartData = [[]];
 	$scope.chart = undefined;
 	$scope.watchlist = [];
-	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
 
 	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
@@ -58,6 +57,12 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		} else {
 			this.$apply(fn);
 		}
+	};
+
+	$scope.sortWatchList = function () {
+		$scope.watchlist.sort(function (a, b) {
+			return a.name > b.name;
+		});
 	};
 
 	// external links in default browser
@@ -295,9 +300,13 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 						}
 						i -= 1;
 					}
+					$scope.sortWatchList();
 				});
 			} else {
-				$scope.safeApply(function () { $scope.watchlist.push($scope.selectedStock); });
+				$scope.safeApply(function () {
+					$scope.watchlist.push($scope.selectedStock);
+					$scope.sortWatchList();
+				});
 			}
 			window.localStorage.setItem("watchlist", JSON.stringify($scope.watchlist));
 			$scope.selectScreenById("watchlist");
@@ -350,9 +359,11 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		return wlSymbols;
 	};
 
+	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
 	if ($scope.watchlist.length === 0) {
 		$scope.watchlist = $scope.previousVersionWatchlist();
 	}
+	$scope.sortWatchList();
 
 	// handle device back button
 	document.addEventListener("backbutton", function () {
