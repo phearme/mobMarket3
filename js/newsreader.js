@@ -25,7 +25,8 @@ var NewsReader = (function () {
 
 	NewsReader.prototype.getNews = function (search, callback) {
 		var xhr = new XMLHttpRequest(),
-			url = this.rssUrl + "&nocache=" + (new Date()).getTime().toString();
+			url = this.rssUrl + "&nocache=" + (new Date()).getTime().toString(),
+			self = this;
 		url += search ? "&q=" + search : "&topic=b";
 		xhr.open("GET", url, true);
 		xhr.onreadystatechange = function () {
@@ -37,10 +38,10 @@ var NewsReader = (function () {
 					itemNodes = data.getElementsByTagName("item");
 					if (itemNodes && itemNodes.length > 0) {
 						for (i = 0; i < itemNodes.length; i += 1) {
-							item = this.NewsModel(
-								this._getNodeValue(itemNodes[i], "title"),
-								this._getNodeValue(itemNodes[i], "link"),
-								this._getNodeValue(itemNodes[i], "pubDate")
+							item = self.NewsModel(
+								self._getNodeValue(itemNodes[i], "title"),
+								self._getNodeValue(itemNodes[i], "link"),
+								self._getNodeValue(itemNodes[i], "pubDate")
 							);
 							description = itemNodes[i].getElementsByTagName("description");
 							if (description && description.length > 0) {
@@ -80,7 +81,7 @@ var NewsReader = (function () {
 					callback(false);
 				}
 			}
-		}.bind(this);
+		};
 		xhr.send(null);
 	};
 

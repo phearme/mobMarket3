@@ -1,5 +1,5 @@
 ﻿/*jslint browser:true*/
-/*global console, angular, NewsReader, YAHOO, YQuotes, google, $*/
+/*global console, angular, NewsReader, YAHOO, YQuotes, GQuotes, google, $*/
 var newsReader = new NewsReader(),
 	mmapp = angular.module("mmapp", ["ngSanitize"]);
 
@@ -163,11 +163,29 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.fetchQuoteData = function () {
 		if ($scope.stockDetailsTimerOn) {
 			YQuotes.getQuote([$scope.selectedStock.symbol], function (data) {
+				console.log("data.query.count: ", data.query.count);
 				if (data && data.query && data.query.results && data.query.results.quote && $scope.selectedStock) {
 					$scope.safeApply(function () {
 						$scope.selectedStock.stockData = data.query.results.quote;
 						$scope.loading = false;
 						console.log($scope.selectedStock.stockData);
+					});
+				} else if (data && data.query && data.query.count === 0) {
+					// y! may be unavailable, try through google
+					console.log("gquote call");
+					GQuotes.getQuote([$scope.selectedStock.symbol], function (data) {
+						if (data && data.length && data.length > 0) {
+							$scope.safeApply(function () {
+								$scope.selectedStock.stockData = {
+									ChangeRealtime: data[0].c,
+									LastTradePriceOnly: data[0].l,
+									ChangeinPercent: data[0].cp + "%",
+									LastTradeTime: data[0].ltt
+								};
+								$scope.loading = false;
+								console.log($scope.selectedStock.stockData);
+							});
+						}
 					});
 				}
 			});
@@ -186,8 +204,13 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			}
 			if (watchlistSymbols.length > 0) {
 				YQuotes.getQuote(watchlistSymbols, function (data) {
-					var j, k;
+					var j, k, missingDataSymbols = [];
 					console.log(data);
+					$scope.safeApply(function () {
+						for (j = 0; j < $scope.watchlist.length; j += 1) {
+							$scope.watchlist[j].stockData = undefined;
+						}
+					});
 					if (data && data.query && data.query.count && data.query.results && data.query.results.quote) {
 						$scope.safeApply(function () {
 							if (data.query.count === 1) {
@@ -206,6 +229,33 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 								}
 							}
 							$scope.loading = false;
+						});
+					}
+					// check if some symbols weren't fecthed => get them through google
+					for (j = 0; j < $scope.watchlist.length; j += 1) {
+						if (!$scope.watchlist[j].stockData) {
+							missingDataSymbols.push($scope.watchlist[j].symbol);
+						}
+					}
+					if (missingDataSymbols.length > 0) {
+						GQuotes.getQuote(missingDataSymbols, function (data) {
+							if (data && data.length && data.length > 0) {
+								$scope.safeApply(function () {
+									for (k = 0; k < data.length; k += 1) {
+										for (j = 0; j < $scope.watchlist.length; j += 1) {
+											if ($scope.watchlist[j].symbol.replace("^", ".") === data[k].t) {
+												$scope.watchlist[j].stockData = {
+													ChangeRealtime: data[k].c,
+													LastTradePriceOnly: data[k].l,
+													ChangeinPercent: data[k].cp + "%",
+													LastTradeTime: data[k].ltt
+												};
+											}
+										}
+									}
+									$scope.loading = false;
+								});
+							}
 						});
 					}
 				});
@@ -451,9 +501,3 @@ document.addEventListener("deviceready", function () {
 	angular.bootstrap(document, ["mmapp"]);
 
 }, false);
-
-$(document).on('click', 'a[href^=http], a[href^=https]', function(e) {
-	e.preventDefault();
-	var $this = $(this);
-	window.open($this.attr("href"), "_system");
-});

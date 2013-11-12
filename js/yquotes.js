@@ -21,7 +21,7 @@ var YQuotes = {
 		for (i = 0; i < symbols.length; i += 1) {
 			url += i === 0 ? "\"" + symbols[i] + "\"" : ",\"" + symbols[i] + "\"";
 		}
-		url += ")&callback=YQuotes.quotesCallback";
+		url += ")&callback=YQuotes.quotesCallback&nocache=" + (new Date()).getTime().toString();
 		this.quotesCallback = callback;
 		script.setAttribute("src", url);
 		document.getElementsByTagName("head")[0].appendChild(script);
@@ -33,7 +33,7 @@ var YQuotes = {
 			url = this.quotesUrl,
 			script = document.createElement("script");
 		startDate.setDate(endDate.getDate() - numDays);
-		url += "&q=select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22" + symbol + "%22%20and%20startDate%20%3D%20%22" + this.getYQLDate(startDate) + "%22%20and%20endDate%20%3D%20%22" + this.getYQLDate(endDate) + "%22&callback=YQuotes.historyCallback";
+		url += "&q=select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22" + symbol + "%22%20and%20startDate%20%3D%20%22" + this.getYQLDate(startDate) + "%22%20and%20endDate%20%3D%20%22" + this.getYQLDate(endDate) + "%22&callback=YQuotes.historyCallback&nocache=" + (new Date()).getTime().toString();
 		this.historyCallback = callback;
 		script.setAttribute("src", url);
 		document.getElementsByTagName("head")[0].appendChild(script);
