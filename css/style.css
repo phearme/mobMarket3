@@ -243,4 +243,5 @@ a {
 	height: 60px;
 	width: 100%;
 	text-align: center;
+	z-index: 99;
 }
