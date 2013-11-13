@@ -505,7 +505,7 @@ document.addEventListener("deviceready", function () {
 	angular.bootstrap(document, ["mmapp"]);
 	// leadbolt ad section
 	var leadboltAdScript = document.createElement("script");
-	leadboltAdScript.setAttribute("src", "http://ad.leadboltads.net/show_app_ad.js?section_id=660243169");
 	document.getElementById("divBottomAd").appendChild(leadboltAdScript);
+	leadboltAdScript.setAttribute("src", "http://ad.leadboltads.net/show_app_ad.js?section_id=660243169");
 
 }, false);

@@ -239,5 +239,8 @@ a {
 .bottomAd {
 	position: fixed;
 	bottom: 0px;
+	left: 0px;
+	height: 60px;
+	width: 100%;
 	text-align: center;
 }
