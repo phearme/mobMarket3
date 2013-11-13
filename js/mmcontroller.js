@@ -208,7 +208,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 					console.log(data);
 					$scope.safeApply(function () {
 						for (j = 0; j < $scope.watchlist.length; j += 1) {
-							$scope.watchlist[j].stockData = undefined;
+							$scope.watchlist[j].dataFetched = false;
 						}
 					});
 					if (data && data.query && data.query.count && data.query.results && data.query.results.quote) {
@@ -217,6 +217,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 								for (j = 0; j < $scope.watchlist.length; j += 1) {
 									if ($scope.watchlist[j].symbol === data.query.results.quote.symbol) {
 										$scope.watchlist[j].stockData = data.query.results.quote;
+										$scope.watchlist[j].dataFetched = true;
 									}
 								}
 							} else if (data.query.count > 1) {
@@ -224,6 +225,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 									for (j = 0; j < $scope.watchlist.length; j += 1) {
 										if ($scope.watchlist[j].symbol === data.query.results.quote[k].symbol) {
 											$scope.watchlist[j].stockData = data.query.results.quote[k];
+											$scope.watchlist[j].dataFetched = true;
 										}
 									}
 								}
@@ -233,7 +235,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 					}
 					// check if some symbols weren't fecthed => get them through google
 					for (j = 0; j < $scope.watchlist.length; j += 1) {
-						if (!$scope.watchlist[j].stockData) {
+						if (!$scope.watchlist[j].dataFetched) {
 							missingDataSymbols.push($scope.watchlist[j].symbol);
 						}
 					}
@@ -299,27 +301,29 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		$scope.safeApply(function () {
 			$scope.chartData = [[]];
 		});
-		YQuotes.getQuoteHistory($scope.selectedStock.symbol, $scope.chartLength[$scope.selectedHistory], function (data) {
-			console.log(data);
-			var chartData = [[]],
-				i,
-				tick,
-				dateTab;
-			if (data && data.query && data.query.results && data.query.results.quote) {
-				for (i = 0; i < data.query.results.quote.length; i += 1) {
-					tick = data.query.results.quote[i];
-					dateTab = tick.Date ? tick.Date.split("-") : tick.col0.split("-");
-					chartData.push([new Date(dateTab[0], dateTab[1] - 1, dateTab[2]).getTime(), window.parseFloat(tick.Close || tick.col1)]);
+		if ($scope.selectedStock) {
+			YQuotes.getQuoteHistory($scope.selectedStock.symbol, $scope.chartLength[$scope.selectedHistory], function (data) {
+				console.log(data);
+				var chartData = [[]],
+					i,
+					tick,
+					dateTab;
+				if (data && data.query && data.query.results && data.query.results.quote) {
+					for (i = 0; i < data.query.results.quote.length; i += 1) {
+						tick = data.query.results.quote[i];
+						dateTab = tick.Date ? tick.Date.split("-") : tick.col0.split("-");
+						chartData.push([new Date(dateTab[0], dateTab[1] - 1, dateTab[2]).getTime(), window.parseFloat(tick.Close || tick.col1)]);
+					}
+					$scope.safeApply(function () {
+						$scope.chartData = chartData;
+						$scope.loading = false;
+					});
+				} else {
+					// try again
+					$scope.fetchHistoryData();
 				}
-				$scope.safeApply(function () {
-					$scope.chartData = chartData;
-					$scope.loading = false;
-				});
-			} else {
-				// try again
-				$scope.fetchHistoryData();
-			}
-		});
+			});
+		}
 	};
 
 	$scope.isInWatchList = function (symbol) {
@@ -499,5 +503,9 @@ document.addEventListener("deviceready", function () {
 	"use strict";
 
 	angular.bootstrap(document, ["mmapp"]);
+	// leadbolt ad section
+	var leadboltAdScript = document.createElement("script");
+	leadboltAdScript.setAttribute("src", "http://ad.leadboltads.net/show_app_ad.js?section_id=660243169");
+	document.getElementById("divBottomAd").appendChild(leadboltAdScript);
 
 }, false);
