@@ -31,8 +31,8 @@
 				<span ng-hide="selectedScreen">
 					<span class="mobClass">mob</span><span class="marketClass">Market</span>
 				</span>
-				<span ng-show="selectedScreen && selectedScreen.id != 'stockDetails' && selectedScreen.id != 'chart'">{{selectedScreen.label}}</span>
-				<span ng-show="selectedStock && (selectedScreen.id == 'stockDetails' || selectedScreen.id == 'chart')">{{selectedStock.symbol}}</span>
+				<span ng-show="selectedScreen && selectedScreen.id != 'stockDetails' && selectedScreen.id != 'chart'" ng-bind="selectedScreen.label"></span>
+				<span ng-show="selectedStock && (selectedScreen.id == 'stockDetails' || selectedScreen.id == 'chart')" ng-bind="selectedStock.symbol"></span>
 			</div>
 			<div ng-show="loading" style="position: fixed; top: 0px; right: 0px; z-index: 99;">
 				<img src="img/loader.gif" />
@@ -57,13 +57,13 @@
 				<br />Search for quotes and add a quote to your watch list.
 			</div>
 			<div ng-repeat="stock in watchlist" class="listItem" touch-action="selectStock" touch-btn="{{stock}}">
-				<div class="floatingBadge">{{stock.symbol}}</div>
-				<div class="listTitle">{{stock.name}}</div>
+				<div class="floatingBadge" ng-bind="stock.symbol"></div>
+				<div class="listTitle" ng-bind="stock.name"></div>
 				<table class="dataTable">
 					<tr>
 						<td class="dataLabel" style="text-align: left;">Last</td>
-						<td ng-class="getDataCellClass(stock.stockData.ChangeRealtime)" style="text-align: right; color: {{}}">
-							{{stock.stockData.LastTradePriceOnly}}
+						<td ng-class="getDataCellClass(stock.stockData.ChangeRealtime)" style="text-align: right;">
+							<span ng-bind="stock.stockData.LastTradePriceOnly"></span>
 							<span ng-show="stock.stockData.ChangeRealtime && stock.stockData.ChangeRealtime.indexOf('+') >= 0">&#8599;</span>
 							<span ng-show="stock.stockData.ChangeRealtime && stock.stockData.ChangeRealtime.indexOf('-') >= 0">&#8600;</span>
 						</td>
@@ -71,8 +71,8 @@
 					<tr>
 						<td class="dataLabel" style="text-align: left;">Change</td>
 						<td ng-class="getDataCellClass(stock.stockData.ChangeRealtime)" style="text-align: right;">
-							{{stock.stockData.ChangeRealtime}}
-							{{stock.stockData.ChangeinPercent}}
+							<span ng-bind="stock.stockData.ChangeRealtime"></span>
+							<span ng-bind="stock.stockData.ChangeinPercent"></span>
 						</td>
 					</tr>
 				</table>
@@ -80,7 +80,7 @@
 		</div>
 		<div ng-show="!selectedScreen" class="content" ng-cloak>
 			<div ng-repeat="menuItem in screens" ng-show="menuItem.inMainMenu" class="menuItem" touch-action="selectScreen" touch-btn="{{menuItem}}">
-				{{menuItem.label}}
+				<span ng-bind="menuItem.label"></span>
 				<div class="menuArrow">&#8250;</div>
 			</div>
 			<div class="bottomAdSpacer"></div>
@@ -91,33 +91,33 @@
 		<div ng-show="selectedScreen.id == 'news'" class="content" ng-cloak>
 			<div ng-repeat="newsItem in newsItems" touch-action="openLink" touch-btn="{{newsItem.link}}" class="listItem">
 				<img class="newsImage" ng-show="newsItem.image" ng-src="http:{{newsItem.image}}" />
-				<div class="listTitle">{{newsItem.title}}</div>
-				<div class="newsDate">{{newsItem.pubDate}}</div>
-				<p class="listContent" ng-show="newsItem.content">{{newsItem.content}}</p>
+				<div class="listTitle" ng-bind="newsItem.title"></div>
+				<div class="newsDate" ng-bind="newsItem.pubDate"></div>
+				<p class="listContent" ng-show="newsItem.content" ng-bind="newsItem.content"></p>
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'search'" class="content" ng-cloak>
 			<input class="inputSearch" type="search" name="search" placeholder="Type here to search" ng-model="searchStock" ng-change="searchChange()" />
 			<div ng-show="searchStock != '' && searchResults.length == 0" class="noResults">No results found</div>
 			<div ng-repeat="searchResult in searchResults" touch-action="selectStock" touch-btn="{{searchResult}}" class="listItem">
-				<div class="floatingBadge">{{searchResult.symbol}}</div>
-				<div class="listTitle">{{searchResult.name}}</div>
-				<div class="listContent"><b>Exchange: </b>{{searchResult.exchDisp || searchResult.exch}}</div>
-				<div class="listContent"><b>Type: </b>{{searchResult.typeDisp || searchResult.type}}</div>
+				<div class="floatingBadge" ng-bind="searchResult.symbol"></div>
+				<div class="listTitle" ng-bind="searchResult.name"></div>
+				<div class="listContent"><b>Exchange: </b><span ng-bind="searchResult.exchDisp || searchResult.exch"></span></div>
+				<div class="listContent"><b>Type: </b><span ng-bind="searchResult.typeDisp || searchResult.type"></span></div>
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'stockDetails'" class="content" ng-cloak>
 			<div class="stockDetails" ng-show="selectedStock.stockData">
 				<div class="stockDetailsHead">
-					<div style="float: right">({{selectedStock.exchDisp || selectedStock.exch}} - {{selectedStock.typeDisp || selectedStock.type}})</div>
-					<div style="font-size: 18px;">{{selectedStock.name}}</div>
+					<div style="float: right;">(<span ng-bind="selectedStock.exchDisp || selectedStock.exch"></span> - <span ng-bind="selectedStock.typeDisp || selectedStock.type"></span>)</div>
+					<div style="font-size: 18px;" ng-bind="selectedStock.name"></div>
 				</div>
 				<div class="listItem">
 					<table class="dataTable">
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Last</td>
-							<td ng-class="getDataCellClass(selectedStock.stockData.ChangeRealtime)" style="text-align: right; color: {{}}">
-								{{selectedStock.stockData.LastTradePriceOnly}}
+							<td ng-class="getDataCellClass(selectedStock.stockData.ChangeRealtime)" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.LastTradePriceOnly"></span>
 								<span ng-show="selectedStock.stockData.ChangeRealtime && selectedStock.stockData.ChangeRealtime.indexOf('+') >= 0">&#8599;</span>
 								<span ng-show="selectedStock.stockData.ChangeRealtime && selectedStock.stockData.ChangeRealtime.indexOf('-') >= 0">&#8600;</span>
 							</td>
@@ -125,37 +125,51 @@
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Change</td>
 							<td ng-class="getDataCellClass(selectedStock.stockData.ChangeRealtime)" style="text-align: right;">
-								{{selectedStock.stockData.ChangeRealtime}}
-								{{selectedStock.stockData.ChangeinPercent}}
+								<span ng-bind="selectedStock.stockData.ChangeRealtime"></span>
+								<span ng-bind="selectedStock.stockData.ChangeinPercent"></span>
 							</td>
 						</tr>
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Last Trade Time</td>
-							<td class="dataCell" style="text-align: right;">{{selectedStock.stockData.LastTradeTime}}</td>
+							<td class="dataCell" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.LastTradeTime"></span>
+							</td>
 						</tr>
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Prev. Close</td>
-							<td class="dataCell" style="text-align: right;">{{selectedStock.stockData.PreviousClose}}</td>
+							<td class="dataCell" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.PreviousClose"></span>
+							</td>
 						</tr>
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Open</td>
-							<td class="dataCell" style="text-align: right;">{{selectedStock.stockData.Open}}</td>
+							<td class="dataCell" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.Open"></span>
+							</td>
 						</tr>
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Bid</td>
-							<td class="dataCell" style="text-align: right;">{{selectedStock.stockData.BidRealtime}}</td>
+							<td class="dataCell" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.BidRealtime"></span>
+							</td>
 						</tr>
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Ask</td>
-							<td class="dataCell" style="text-align: right;">{{selectedStock.stockData.AskRealtime}}</td>
+							<td class="dataCell" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.AskRealtime"></span>
+							</td>
 						</tr>
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Volume</td>
-							<td class="dataCell" style="text-align: right;">{{selectedStock.stockData.Volume}}</td>
+							<td class="dataCell" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.Volume"></span>
+							</td>
 						</tr>
 						<tr>
 							<td class="dataLabel" style="text-align: left;">Market Cap</td>
-							<td class="dataCell" style="text-align: right;">{{selectedStock.stockData.MarketCapitalization}}</td>
+							<td class="dataCell" style="text-align: right;">
+								<span ng-bind="selectedStock.stockData.MarketCapitalization"></span>
+							</td>
 						</tr>
 					</table>
 				</div>
@@ -167,7 +181,7 @@
 				<div class="listItem" ng-show="showExtended">
 					<table class="dataTable">
 						<tr ng-repeat="(key, val) in selectedStock.stockData" ng-show="val && val != 'N/A - N/A'">
-							<td class="dataLabel" style="text-align: left;">{{key}}</td>
+							<td class="dataLabel" style="text-align: left;" ng-bind="key"></td>
 							<td class="dataCell" style="text-align: right;" ng-bind-html="val"></td>
 						</tr>
 					</table>
@@ -192,11 +206,13 @@
 		</div>
 		<div ng-show="selectedScreen.id == 'chart'" class="content" ng-cloak>
 			<div class="stockDetailsHead">
-				<div style="float: right">({{selectedStock.exchDisp || selectedStock.exch}} - {{selectedStock.typeDisp || selectedStock.type}})</div>
-				<div style="font-size: 18px;">{{selectedStock.name}}</div>
+				<div style="float: right">
+					(<span ng-bind="selectedStock.exchDisp || selectedStock.exch"></span> - <span ng-bind="selectedStock.typeDisp || selectedStock.type"></span>)
+				</div>
+				<div style="font-size: 18px;" ng-bind="selectedStock.name"></div>
 			</div>
 			<div class="chartButtons">
-				<div ng-repeat="lengthItem in chartLengthOrdered" ng-class="getChartButtonClass(lengthItem.key)" touch-btn="{{lengthItem.key}}" touch-action="setChartLength">{{lengthItem.key}}</div>
+				<div ng-repeat="lengthItem in chartLengthOrdered" ng-class="getChartButtonClass(lengthItem.key)" touch-btn="{{lengthItem.key}}" touch-action="setChartLength" ng-bind="lengthItem.key"></div>
 			</div>
 			<div ng-hide="loading" id="divChart" class="chart" draw-chart=""></div>
 		</div>
