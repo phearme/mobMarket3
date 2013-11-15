@@ -4,13 +4,13 @@
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
         id        = "com.phonegap.mobmarket"
-        version   = "3.0.1"
-		versionCode	= "301">
+        version   = "3.0.2"
+		versionCode	= "302">
 
     <name>mobMarket</name>
 
     <description>
-        Real-time stock market quotes. Search for stock market quotes, add stock quotes to your watch list. View watch list quotes in real-time. Financial news. Historical price chart. Portfolio management with real-time update.
+        Real-time stock market quotes. Search for stock market quotes, add track stock quotes to your watch list. View watch list quotes in real-time. Financial news. Historical price chart. Portfolio management with real-time update.
     </description>
 
     <author href="mailto:raphael.cohen@gmail.com" email="raphael.cohen@gmail.com">
