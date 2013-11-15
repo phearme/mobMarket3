@@ -14,6 +14,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		{id: "stockDetails", label: "", inMainMenu: false},
 		{id: "news", label: "Financial News", inMainMenu: true},
 		{id: "watchlist", label: "Watch List", inMainMenu: true},
+		{id: "portfolio", label: "Portfolio", inMainMenu: true},
 		{id: "about", label: "About", inMainMenu: true},
 		{id: "chart", label: "", inMainMenu: false}
 	];
@@ -35,19 +36,23 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	});
 	$scope.loading = false;
 	$scope.selectedScreen = undefined;
+	$scope.parentScreenId = undefined;
 	$scope.selectedStock = undefined;
 	$scope.newsItems = [];
 	$scope.searchResults = [];
 	$scope.searchStock = "";
 	$scope.stockDetailsTimerOn = false;
 	$scope.watchlistTimerOn = false;
+	$scope.portfolioTimerOn = false;
 	$scope.getQuoteTimeout = undefined;
 	$scope.watchlistTimeout = undefined;
+	$scope.portfolioTimeout = undefined;
 	$scope.showExtended = false;
 	$scope.selectedHistory = "1m";
 	$scope.chartData = [[]];
 	$scope.chart = undefined;
 	$scope.watchlist = [];
+	$scope.portfolio = [];
 
 	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
@@ -65,6 +70,20 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		});
 	};
 
+	$scope.sortPortfolio = function () {
+		$scope.portfolio.sort(function (a, b) {
+			return a.name > b.name;
+		});
+	};
+
+	$scope.getPtfTitleValue = function (stock) {
+		var last = stock.stockData.LastTradePriceOnly;
+		while (last.indexOf(",") >= 0) {
+			last = last.replace(",", "");
+		}
+		return stock.quantity * window.parseFloat(last);
+	};
+
 	// external links in default browser
 	$scope.openLink = function (link) {
 		window.open(link, "_system");
@@ -75,37 +94,47 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		var newsSearch;
 		if (!s || s === "") {
 			$scope.selectedScreen = $scope.selectedStock = undefined;
-			return;
-		}
-		$scope.selectedScreen = typeof s === "string" ? JSON.parse(s) : s;
-		switch ($scope.selectedScreen.id) {
-		case "news":
-			$scope.loading = true;
-			newsSearch = $scope.selectedStock ? $scope.selectedStock.name : undefined;
-			newsReader.getNews(newsSearch, function (items) {
-				$scope.safeApply(function () { $scope.loading = false; });
-				if (items && items.length > 0) {
-					$scope.safeApply(function () { $scope.newsItems = items; });
-				}
-			});
-			break;
-		case "search":
-			if (!preserveContext) {
-				$scope.safeApply(function () {
-					$scope.searchStock = "";
-					$scope.searchResults = [];
-				});
-			}
-			break;
-		case "watchlist":
-			if ($scope.watchlist.length > 0) {
+		} else {
+			$scope.selectedScreen = typeof s === "string" ? JSON.parse(s) : s;
+			switch ($scope.selectedScreen.id) {
+			case "news":
 				$scope.loading = true;
+				newsSearch = $scope.selectedStock ? $scope.selectedStock.name : undefined;
+				newsReader.getNews(newsSearch, function (items) {
+					$scope.safeApply(function () { $scope.loading = false; });
+					if (items && items.length > 0) {
+						$scope.safeApply(function () { $scope.newsItems = items; });
+					}
+				});
+				break;
+			case "search":
+				$scope.parentScreenId = "search";
+				if (!preserveContext) {
+					$scope.safeApply(function () {
+						$scope.searchStock = "";
+						$scope.searchResults = [];
+					});
+				}
+				break;
+			case "watchlist":
+				$scope.parentScreenId = "watchlist";
+				if ($scope.watchlist.length > 0) {
+					$scope.loading = true;
+				}
+				$scope.watchlistTimerOn = true;
+				$scope.fetchWatchListData();
+				break;
+			case "portfolio":
+				$scope.parentScreenId = "portfolio";
+				if ($scope.portfolio.length > 0) {
+					$scope.loading = true;
+				}
+				$scope.portfolioTimerOn = true;
+				$scope.fetchPortfolioData();
+				break;
 			}
-			$scope.watchlistTimerOn = true;
-			$scope.fetchWatchListData();
-			break;
 		}
-		if ($scope.selectedScreen.id !== "stockDetails") {
+		if (!$scope.selectedScreen || ($scope.selectedScreen.id !== "stockDetails")) {
 			window.clearTimeout($scope.getQuoteTimeout);
 			$scope.getQuoteTimeout = undefined;
 			$scope.stockDetailsTimerOn = false;
@@ -130,10 +159,12 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		$scope.loading = false;
 		switch (from.id) {
 		case "stockDetails":
-			if ($scope.selectedStock && $scope.isInWatchList($scope.selectedStock.symbol)) {
-				$scope.selectScreenById("watchlist");
+			if ($scope.parentScreenId === "watchlist" || $scope.parentScreenId === "portfolio") {
+				$scope.selectScreenById($scope.parentScreenId);
+			} else if ($scope.parentScreenId === "search") {
+				$scope.selectScreenById($scope.parentScreenId, true);
 			} else {
-				$scope.selectScreenById("search", true);
+				$scope.selectScreen(undefined);
 			}
 			break;
 		case "chart":
@@ -147,9 +178,17 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			}
 			break;
 		case "watchlist":
+			console.log("clearing watchlist timeout");
 			window.clearTimeout($scope.watchlistTimeout);
 			$scope.watchlistTimeout = undefined;
 			$scope.watchlistTimerOn = false;
+			$scope.selectScreen(undefined);
+			break;
+		case "portfolio":
+			console.log("clearing portfolio timeout");
+			window.clearTimeout($scope.portfolioTimeout);
+			$scope.portfolioTimeout = undefined;
+			$scope.portfolioTimerOn = false;
 			$scope.selectScreen(undefined);
 			break;
 		case "search":
@@ -268,6 +307,79 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		}
 	};
 
+	// fecthes quotes data for portfolio
+	$scope.fetchPortfolioData = function () {
+		var ptfSymbols = [], i;
+		if ($scope.portfolioTimerOn) {
+			for (i = 0; i < $scope.portfolio.length; i += 1) {
+				ptfSymbols.push($scope.portfolio[i].symbol);
+			}
+			if (ptfSymbols.length > 0) {
+				YQuotes.getQuote(ptfSymbols, function (data) {
+					var j, k, missingDataSymbols = [];
+					console.log(data);
+					$scope.safeApply(function () {
+						for (j = 0; j < $scope.portfolio.length; j += 1) {
+							$scope.portfolio[j].dataFetched = false;
+						}
+					});
+					if (data && data.query && data.query.count && data.query.results && data.query.results.quote) {
+						$scope.safeApply(function () {
+							if (data.query.count === 1) {
+								for (j = 0; j < $scope.portfolio.length; j += 1) {
+									if ($scope.portfolio[j].symbol === data.query.results.quote.symbol) {
+										$scope.portfolio[j].stockData = data.query.results.quote;
+										$scope.portfolio[j].dataFetched = true;
+									}
+								}
+							} else if (data.query.count > 1) {
+								for (k = 0; k < data.query.results.quote.length; k += 1) {
+									for (j = 0; j < $scope.portfolio.length; j += 1) {
+										if ($scope.portfolio[j].symbol === data.query.results.quote[k].symbol) {
+											$scope.portfolio[j].stockData = data.query.results.quote[k];
+											$scope.portfolio[j].dataFetched = true;
+										}
+									}
+								}
+							}
+							$scope.loading = false;
+						});
+					}
+					// check if some symbols weren't fecthed => get them through google
+					for (j = 0; j < $scope.portfolio.length; j += 1) {
+						if (!$scope.portfolio[j].dataFetched) {
+							missingDataSymbols.push($scope.portfolio[j].symbol);
+						}
+					}
+					if (missingDataSymbols.length > 0) {
+						GQuotes.getQuote(missingDataSymbols, function (data) {
+							if (data && data.length && data.length > 0) {
+								$scope.safeApply(function () {
+									for (k = 0; k < data.length; k += 1) {
+										for (j = 0; j < $scope.portfolio.length; j += 1) {
+											if ($scope.portfolio[j].symbol.replace("^", ".") === data[k].t) {
+												$scope.portfolio[j].stockData = {
+													ChangeRealtime: data[k].c,
+													LastTradePriceOnly: data[k].l,
+													ChangeinPercent: data[k].cp + "%",
+													LastTradeTime: data[k].ltt
+												};
+											}
+										}
+									}
+									$scope.loading = false;
+								});
+							}
+						});
+					}
+				});
+			}
+			$scope.safeApply(function () {
+				$scope.portfolioTimeout = window.setTimeout($scope.fetchPortfolioData, $scope.realTimeFrequency);
+			});
+		}
+	};
+
 	// opens up the detail stock screen and starts up fetching quotes data
 	$scope.selectStock = function (stock) {
 		if (!stock) {
@@ -336,8 +448,18 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		return false;
 	};
 
-	$scope.selectedStockAction = function (action) {
+	$scope.isInPortfolio = function (symbol) {
 		var i;
+		for (i = 0; i < $scope.portfolio.length; i += 1) {
+			if ($scope.portfolio[i].symbol === symbol) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	$scope.selectedStockAction = function (action) {
+		var i, quantity, floatQty;
 		switch (action) {
 		case "chart":
 			$scope.loading = true;
@@ -357,7 +479,6 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 						}
 						i -= 1;
 					}
-					$scope.sortWatchList();
 				});
 			} else {
 				$scope.safeApply(function () {
@@ -367,6 +488,33 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			}
 			window.localStorage.setItem("watchlist", JSON.stringify($scope.watchlist));
 			$scope.selectScreenById("watchlist");
+			break;
+		case "portfolio":
+			if ($scope.isInPortfolio($scope.selectedStock.symbol)) {
+				$scope.safeApply(function () {
+					i = $scope.portfolio.length - 1;
+					while (i >= 0) {
+						if ($scope.portfolio[i].symbol === $scope.selectedStock.symbol) {
+							$scope.portfolio.splice(i, 1);
+						}
+						i -= 1;
+					}
+				});
+				window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
+				$scope.selectScreenById("portfolio");
+			} else {
+				quantity = window.prompt("- Add To Portfolio -\nEnter quantity for " + $scope.selectedStock.name, "1");
+				floatQty = window.parseFloat(quantity);
+				if (floatQty) {
+					$scope.safeApply(function () {
+						$scope.selectedStock.quantity = floatQty;
+						$scope.portfolio.push($scope.selectedStock);
+						$scope.sortPortfolio();
+					});
+					window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
+					$scope.selectScreenById("portfolio");
+				}
+			}
 			break;
 		}
 	};
@@ -410,10 +558,27 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 				}
 			}
 		} catch (e) {
-			console.log(e);
 			wlSymbols = [];
 		}
 		return wlSymbols;
+	};
+
+	$scope.previousVersionPortfolio = function () {
+		var ptf = [], i, glob_ptfPrefix = "ptf://", data;
+		try {
+			for (i = 0; i < window.localStorage.length; i += 1) {
+				if (window.localStorage.key(i).indexOf(glob_ptfPrefix) >= 0) {
+					data = JSON.parse(window.localStorage.getItem(window.localStorage.key(i)));
+					if (data && data.symbol && data.title && data.quantity) {
+						ptf.push({symbol: data.symbol, name: data.title, quantity: data.quantity});
+					}
+				}
+			}
+		} catch (e) {
+			console.log(e);
+			ptf = [];
+		}
+		return ptf;
 	};
 
 	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
@@ -421,6 +586,11 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		$scope.watchlist = $scope.previousVersionWatchlist();
 	}
 	$scope.sortWatchList();
+	$scope.portfolio = JSON.parse(window.localStorage.getItem("portfolio")) || [];
+	if ($scope.portfolio.length === 0) {
+		$scope.portfolio = $scope.previousVersionPortfolio();
+	}
+	$scope.sortPortfolio();
 
 	// handle device back button
 	document.addEventListener("backbutton", function () {

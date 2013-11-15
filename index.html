@@ -78,6 +78,41 @@
 				</table>
 			</div>
 		</div>
+		<div ng-show="selectedScreen.id == 'portfolio'" class="content" ng-cloak>
+			<div class="noResults" ng-show="portfolio.length == 0">
+				Your portfolio list is empty.
+				<br />Search for quotes and add a quote to your portfolio.
+			</div>
+			<div ng-repeat="stock in portfolio" class="listItem" touch-action="selectStock" touch-btn="{{stock}}">
+				<div class="floatingBadge" ng-bind="stock.symbol"></div>
+				<div class="listTitle" ng-bind="stock.name"></div>
+				<table class="dataTable">
+					<tr>
+						<td class="dataLabel" style="text-align: left;">Last</td>
+						<td ng-class="getDataCellClass(stock.stockData.ChangeRealtime)" style="text-align: right;">
+							<span ng-bind="stock.stockData.LastTradePriceOnly"></span>
+							<span ng-show="stock.stockData.ChangeRealtime && stock.stockData.ChangeRealtime.indexOf('+') >= 0">&#8599;</span>
+							<span ng-show="stock.stockData.ChangeRealtime && stock.stockData.ChangeRealtime.indexOf('-') >= 0">&#8600;</span>
+						</td>
+					</tr>
+					<tr>
+						<td class="dataLabel" style="text-align: left;">Change</td>
+						<td ng-class="getDataCellClass(stock.stockData.ChangeRealtime)" style="text-align: right;">
+							<span ng-bind="stock.stockData.ChangeRealtime"></span>
+							<span ng-bind="stock.stockData.ChangeinPercent"></span>
+						</td>
+					</tr>
+					<tr>
+						<td class="dataLabel" style="text-align: left;">Quantity</td>
+						<td class="dataCell" style="text-align: right;" ng-bind="stock.quantity"></td>
+					</tr>
+					<tr>
+						<td class="dataLabel" style="text-align: left;">Value</td>
+						<td class="dataCell" style="text-align: right;" ng-bind="getPtfTitleValue(stock)"></td>
+					</tr>
+				</table>
+			</div>
+		</div>
 		<div ng-show="!selectedScreen" class="content" ng-cloak>
 			<div ng-repeat="menuItem in screens" ng-show="menuItem.inMainMenu" class="menuItem" touch-action="selectScreen" touch-btn="{{menuItem}}">
 				<span ng-bind="menuItem.label"></span>
@@ -200,6 +235,14 @@
 				</div>
 				<div ng-show="isInWatchList(selectedStock.symbol)" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="watchlist">
 					Remove from Watch List
+					<div class="menuArrow">&#8250;</div>
+				</div>
+				<div ng-hide="isInPortfolio(selectedStock.symbol)" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="portfolio">
+					Add to Portfolio
+					<div class="menuArrow">&#8250;</div>
+				</div>
+				<div ng-show="isInPortfolio(selectedStock.symbol)" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="portfolio">
+					Remove from Portfolio
 					<div class="menuArrow">&#8250;</div>
 				</div>
 			</div>

@@ -35,6 +35,7 @@ var NewsReader = (function () {
 			if (xhr.readyState === 4) {
 				if (xhr.status === 200) {
 					data = (new window.DOMParser()).parseFromString(xhr.responseText, "text/xml");
+					console.log(data);
 					itemNodes = data.getElementsByTagName("item");
 					if (itemNodes && itemNodes.length > 0) {
 						for (i = 0; i < itemNodes.length; i += 1) {
