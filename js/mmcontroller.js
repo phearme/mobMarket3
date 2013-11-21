@@ -81,7 +81,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		while (last.indexOf(",") >= 0) {
 			last = last.replace(",", "");
 		}
-		return stock.quantity * window.parseFloat(last);
+		return Math.round(stock.quantity * window.parseFloat(last) * 100) / 100;
 	};
 
 	// external links in default browser
