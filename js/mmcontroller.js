@@ -1,5 +1,5 @@
 ﻿/*jslint browser:true*/
-/*global console, angular, NewsReader, YAHOO, YQuotes, GQuotes, google, $*/
+/*global console, angular, NewsReader, YAHOO, YQuotes, GQuotes, MMApi, google, $*/
 var newsReader = new NewsReader(),
 	mmapp = angular.module("mmapp", ["ngSanitize"]);
 
@@ -9,14 +9,17 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	var i;
 	$scope.realTimeFrequency = 4500;
 	window.debugScope = $scope;
+	$scope.Math = window.Math;
 	$scope.screens = [
 		{id: "search", label: "Search Quote", inMainMenu: true},
 		{id: "stockDetails", label: "", inMainMenu: false},
 		{id: "news", label: "Financial News", inMainMenu: true},
 		{id: "watchlist", label: "Watch List", inMainMenu: true},
 		{id: "portfolio", label: "Portfolio", inMainMenu: true},
-		{id: "about", label: "About", inMainMenu: true},
-		{id: "chart", label: "", inMainMenu: false}
+		{id: "chart", label: "", inMainMenu: false},
+		{id: "backuprestore", label: "Backup • Restore", inMainMenu: true},
+		{id: "backuprestorestatus", label: "Backup • Restore", inMainMenu: false},
+		{id: "about", label: "About", inMainMenu: true}
 	];
 	$scope.chartLength = {
 		"1w": 7,
@@ -53,6 +56,9 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.chart = undefined;
 	$scope.watchlist = [];
 	$scope.portfolio = [];
+	$scope.chooseQtyPtf = false;
+	$scope.inputQty = 1;
+	$scope.restoreCode = "";
 
 	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
@@ -77,11 +83,22 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	};
 
 	$scope.getPtfTitleValue = function (stock) {
-		var last = stock.stockData.LastTradePriceOnly;
-		while (last.indexOf(",") >= 0) {
-			last = last.replace(",", "");
+		var last = 0;
+		if (stock && stock.stockData && stock.stockData.LastTradePriceOnly) {
+			last = stock.stockData.LastTradePriceOnly;
+			while (last.indexOf(",") >= 0) {
+				last = last.replace(",", "");
+			}
 		}
-		return Math.round(stock.quantity * window.parseFloat(last) * 100) / 100;
+		return stock.quantity * window.parseFloat(last);
+	};
+
+	$scope.getPtfValue = function () {
+		var total = 0;
+		$scope.portfolio.forEach(function (s) {
+			total += $scope.getPtfTitleValue(s);
+		});
+		return total;
 	};
 
 	// external links in default browser
@@ -192,6 +209,8 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			$scope.selectScreen(undefined);
 			break;
 		case "search":
+		case "backuprestore":
+		case "backuprestorestatus":
 		case "about":
 			$scope.selectScreen(undefined);
 			break;
@@ -393,6 +412,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		$scope.fetchQuoteData();
 
 		// show details screen
+		$scope.chooseQtyPtf = false;
 		$scope.selectScreenById("stockDetails");
 	};
 
@@ -458,8 +478,30 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		return false;
 	};
 
+	$scope.addToPtf = function (action) {
+		var quantity, floatQty;
+		if (action === "cancel") {
+			$scope.chooseQtyPtf = false;
+			return;
+		}
+		if (action === "ok") {
+			quantity = $scope.inputQty;
+			floatQty = window.parseFloat(quantity);
+			if (floatQty) {
+				$scope.safeApply(function () {
+					$scope.selectedStock.quantity = floatQty;
+					$scope.portfolio.push($scope.selectedStock);
+					$scope.sortPortfolio();
+				});
+				window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
+				$scope.chooseQtyPtf = false;
+				$scope.selectScreenById("portfolio");
+			}
+		}
+	};
+
 	$scope.selectedStockAction = function (action) {
-		var i, quantity, floatQty;
+		var i;
 		switch (action) {
 		case "chart":
 			$scope.loading = true;
@@ -503,17 +545,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 				window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
 				$scope.selectScreenById("portfolio");
 			} else {
-				quantity = window.prompt("- Add To Portfolio -\nEnter quantity for " + $scope.selectedStock.name, "1");
-				floatQty = window.parseFloat(quantity);
-				if (floatQty) {
-					$scope.safeApply(function () {
-						$scope.selectedStock.quantity = floatQty;
-						$scope.portfolio.push($scope.selectedStock);
-						$scope.sortPortfolio();
-					});
-					window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
-					$scope.selectScreenById("portfolio");
-				}
+				$scope.chooseQtyPtf = !$scope.chooseQtyPtf;
 			}
 			break;
 		}
@@ -592,6 +624,90 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	}
 	$scope.sortPortfolio();
 
+	$scope.backupRestore = function (action) {
+		$scope.backupRestoreDone = false;
+		$scope.backupSuccess = false;
+		$scope.restoreSuccess = false;
+		$scope.backupCode = "";
+		$scope.enterRestoreCode = false;
+		if (action === "backup") {
+			if ($scope.portfolio.length === 0) {
+				$scope.selectScreenById("portfolio");
+			} else {
+				$scope.loading = true;
+				$scope.selectScreenById("backuprestorestatus");
+				MMApi.setPortfolio($scope.portfolio, function (ptfId) {
+					var code = "";
+					if (ptfId) {
+						code = MMApi.encodeId(ptfId);
+					}
+					if (code !== "") {
+						$scope.safeApply(function () {
+							$scope.backupCode = code;
+							$scope.backupRestoreDone = true;
+							$scope.backupSuccess = true;
+							$scope.loading = false;
+						});
+					} else {
+						$scope.safeApply(function () {
+							$scope.selectScreen(undefined);
+						});
+					}
+				});
+			}
+		} else if (action === "enterrestorecode") {
+			navigator.notification.confirm("Restoring is only available in the Pro version. Would you like ", function (btn) {
+				console.log("btn");
+			}, "Get the Pro version", ["Ok", "No thanks"]);
+			/*
+			$scope.inputRestoreCode = "";
+			$scope.enterRestoreCode = true;
+			*/
+		} else if (action === "restore") {
+			var ptfId = "";
+			if ($scope.restoreCode !== "") {
+				ptfId = MMApi.decodeId($scope.restoreCode);
+			}
+			if (ptfId !== "") {
+				$scope.loading = true;
+				$scope.selectScreenById("backuprestorestatus");
+				MMApi.getPortfolio(ptfId, function (data) {
+					if (data && data.data && data.resultCode === 0) {
+						console.log("restoring");
+						var ptfData = JSON.parse(data.data);
+						$scope.safeApply(function () {
+							$scope.portfolio = ptfData;
+							$scope.backupRestoreDone = true;
+							$scope.restoreSuccess = true;
+							$scope.loading = false;
+						});
+						window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
+					} else {
+						$scope.safeApply(function () {
+							$scope.selectScreen(undefined);
+						});
+					}
+				});
+			} else {
+				$scope.safeApply(function () {
+					$scope.selectScreen(undefined);
+				});
+			}
+		}
+	};
+
+	$scope.shareApp = function () {
+		if (window.plugins && window.plugins.socialsharing) {
+			window.plugins.socialsharing.share(null, null, null, "https://play.google.com/store/apps/details?id=com.phonegap.mobmarket");
+		}
+	};
+
+	$scope.shareBackupCode = function () {
+		if (window.plugins && window.plugins.socialsharing && $scope.backupCode && $scope.backupCode !== "") {
+			window.plugins.socialsharing.share("Here is your mobMarket backup code: " + $scope.backupCode + " \nUse this code to restore your portfolio data on any device.", "mobMarket Backup Code");
+		}
+	};
+
 	// handle device back button
 	document.addEventListener("backbutton", function () {
 		$scope.safeApply(function () {
@@ -668,10 +784,11 @@ mmapp.directive("drawChart", function () {
 	};
 });
 
-
+/*
 document.addEventListener("deviceready", function () {
 	"use strict";
-
+*/
 	angular.bootstrap(document, ["mmapp"]);
-
+/*
 }, false);
+*/

@@ -8,6 +8,7 @@
 	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
 	<title>mobMarket</title>
 	<script type="text/javascript" src="phonegap.js"></script>
+	<script src="js/plugins/SocialSharing.js"></script>
 	<script type="text/javascript" src="js/json2.min.js"></script>
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
@@ -18,9 +19,10 @@
 	<script type="text/javascript" src="js/ysearch.js"></script>
 	<script type="text/javascript" src="js/gquotes.js"></script>
 	<script type="text/javascript" src="js/yquotes.js"></script>
+	<script type="text/javascript" src="js/mmapi.js"></script>
 </head>
-<body ng-controller="mmCtrl">
-	<div id="screenMain" ng-cloak>
+<body>
+	<div id="screenMain" ng-controller="mmCtrl" class="mainWrap" ng-cloak>
 		<div id="mainHeader" class="header" ng-cloak>
 			<div touch-action="goBack" touch-btn="{{selectedScreen}}">
 				<span class="backArrow">
@@ -38,16 +40,18 @@
 				<img src="img/loader.gif" />
 			</div>
 		</div>
-		<div ng-show="selectedScreen.id == 'about'" class="content" ng-cloak>
-			<div style="text-align: left; margin: 12px; overflow: hidden;">
-				<div style="float: left;">
-					<span class="mobClass">mob</span><span class="marketClass">Market</span>
-				</div>
-				<div style="float: right;">
-					<h3>Version 3.0.2</h3>
-					<p>Developed by Raphael Cohen.
-					If you like this app or would like to share feedback on usage, please drop us an e-mail :
-					<a href="mailto:raphael.cohen@gmail.com">raphael.cohen@gmail.com</a></p>
+		<div ng-show="selectedScreen.id == 'about'" class="content"  style="text-align: left;" ng-cloak>
+			<div style="font-weight: bold; margin: 8px;">
+				<h2>mobMarket</h2>
+				<h3>Version 3.0.3</h3>
+			</div>
+			<div style="margin: 8px;">
+				<p>Developed by Raphael Cohen.
+				If you like this app or would like to share feedback on usage, please contact us.</p>
+				<div style="margin-right: 12px; overflow: hidden;">
+					<a href="mailto:raphael.cohen@gmail.com?subject=mobMarket"><span class="chartButton" style="width: 90%; font-size: 24px; text-align: center; margin: 4px; color: #ffffff;" touch-btn="">Contact us</span></a>
+					<br />
+					<span class="chartButton" style="width: 90%; font-size: 24px; font-weight: bold; text-align: center; margin: 4px;" touch-btn="" touch-action="shareApp">Share this app</span>
 				</div>
 			</div>
 		</div>
@@ -83,6 +87,14 @@
 				Your portfolio list is empty.
 				<br />Search for quotes and add a quote to your portfolio.
 			</div>
+			<div ng-hide="portfolio.length == 0" class="menuItem">
+				<table class="dataTable">
+					<tr>
+						<td class="dataLabel" style="text-align: left;">Total Value</td>
+						<td class="dataCell" style="text-align: right;" ng-bind="Math.round(getPtfValue() * 100) / 100"></td>
+					</tr>
+				</table>
+			</div>
 			<div ng-repeat="stock in portfolio" class="listItem" touch-action="selectStock" touch-btn="{{stock}}">
 				<div class="floatingBadge" ng-bind="stock.symbol"></div>
 				<div class="listTitle" ng-bind="stock.name"></div>
@@ -108,7 +120,7 @@
 					</tr>
 					<tr>
 						<td class="dataLabel" style="text-align: left;">Value</td>
-						<td class="dataCell" style="text-align: right;" ng-bind="getPtfTitleValue(stock)"></td>
+						<td class="dataCell" style="text-align: right;" ng-bind="Math.round(getPtfTitleValue(stock) * 100) / 100"></td>
 					</tr>
 				</table>
 			</div>
@@ -117,10 +129,6 @@
 			<div ng-repeat="menuItem in screens" ng-show="menuItem.inMainMenu" class="menuItem" touch-action="selectScreen" touch-btn="{{menuItem}}">
 				<span ng-bind="menuItem.label"></span>
 				<div class="menuArrow">&#8250;</div>
-			</div>
-			<div class="bottomAdSpacer"></div>
-			<div class="bottomAd" id="divBottomAd">
-				<script async type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=660243169"></script>
 			</div>
 		</div>
 		<div ng-show="selectedScreen.id == 'news'" class="content" ng-cloak>
@@ -237,9 +245,24 @@
 					Remove from Watch List
 					<div class="menuArrow">&#8250;</div>
 				</div>
-				<div ng-hide="isInPortfolio(selectedStock.symbol)" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="portfolio">
+				<div ng-show="!isInPortfolio(selectedStock.symbol) && !chooseQtyPtf" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="portfolio">
 					Add to Portfolio
 					<div class="menuArrow">&#8250;</div>
+				</div>
+				<div ng-show="!isInPortfolio(selectedStock.symbol) && chooseQtyPtf" class="menuItem" style="margin: 4px; overflow: hidden;">
+					<table style="width: 100%;">
+						<tr>
+							<td><label for="inputQty">Quantity</label></td>
+							<td><input id="inputQty" type="number" class="inputQty" ng-model="inputQty" /></td>
+						</tr>
+						<tr>
+							<td>&nbsp;</td>
+							<td>
+								<span class="chartButton" touch-btn="cancel" touch-action="addToPtf">Cancel</span>
+								<span class="chartButton" style="margin-right: 14px;" touch-btn="ok" touch-action="addToPtf">Ok</span>
+							</td>
+						</tr>
+					</table>
 				</div>
 				<div ng-show="isInPortfolio(selectedStock.symbol)" class="menuItem" style="margin: 4px;" touch-action="selectedStockAction" touch-btn="portfolio">
 					Remove from Portfolio
@@ -259,6 +282,57 @@
 			</div>
 			<div ng-hide="loading" id="divChart" class="chart" draw-chart=""></div>
 		</div>
+		<div ng-show="selectedScreen.id == 'backuprestore'" class="content" ng-cloak>
+			<div class="listItem">
+				<div style="text-align: left;">
+					<p>Backup your Portfolio data in the cloud, and restore your data from anywhere, anytime, on any device.</p>
+				</div>
+				<div>
+					<div style="float: left; width: 54px; overflow: hidden;"><!--&#9990;-->
+						<div id="iphone">
+							<span class="earpiece"></span>
+							<span class="screen"></span>
+							<span class="home"></span>
+						</div>
+					</div>
+					<div style="float: right; font-size: 74px;">&#9729;</div>
+					<div style="overflow: hidden; text-align: center; padding: 4px; margin: 4px;">
+						<div style="width: 98%">
+							<span class="chartButton" style="font-size: 21px; width: 90%;" touch-btn="backup" touch-action="backupRestore">Backup &#8674;</span>
+							<br /><br />
+						</div>
+						<div style="width: 98%">
+							<span class="chartButton" style="font-size: 21px; width: 90%;" touch-btn="enterrestorecode" touch-action="backupRestore">&#8672; Restore</span>
+						</div>
+						<div ng-show="enterRestoreCode" style="width: 98%">
+							<br /><br />
+							<input type="text" class="inputRestoreCode" ng-model="restoreCode" placeholder="Enter code" />
+							<br /><br />
+							<span class="chartButton" style="font-size: 24px;" touch-btn="" touch-action="backupRestore">Cancel</span>
+							<span class="chartButton" style="margin-right: 14px; font-size: 24px;" touch-btn="restore" touch-action="backupRestore">Ok</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div ng-show="selectedScreen.id == 'backuprestorestatus'" class="content" ng-cloak>
+			<div class="listItem" style="text-align: center;">
+				<div style="font-size: 74px;">&#9729;</div>
+				<div ng-hide="backupRestoreDone">Just a moment...</div>
+				<div ng-show="backupSuccess">
+					<p>Your Portfolio data has now been backed up. Please save the following code. This code will be asked when restoring your data.</p>
+					<div class="listItem" style="font-size: 26px; font-weight: bold; text-shadow: 0 0 2px #ffffff;" ng-bind="backupCode" touch-btn="" touch-action="shareBackupCode"></div>
+					<span class="chartButton" style="width: 94%; margin-left: 8px; font-size: 24px;" touch-btn="" touch-action="selectScreen">Ok</span>
+				</div>
+				<div ng-show="restoreSuccess">
+					<p>Your portfolio data has been restored.</p>
+					<span class="chartButton" style="width: 94%; margin-left: 8px; font-size: 24px;" touch-btn="" touch-action="selectScreen">Ok</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="bottomAd" id="divBottomAd">
+		<script async type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=660243169"></script>
 	</div>
 	<script type="text/javascript" src="js/angular.min.js"></script>
 	<script type="text/javascript" src="js/angular-sanitize.min.js"></script>
