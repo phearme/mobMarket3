@@ -23,10 +23,6 @@ a {
 	text-decoration: none;
 }
 
-.mainWrap {
-	padding-bottom: 60px;
-}
-
 .header {
 	position: fixed;
 	width: 100%;
@@ -58,7 +54,11 @@ a {
 .content {
 	z-index: 98;
 	padding-top: 53px;
-	padding-bottom: 8px;
+	padding-bottom: 4px;
+}
+
+.mainWrap {
+	padding-bottom: 60px;
 }
 
 .overlay {

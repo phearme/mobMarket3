@@ -42,16 +42,18 @@
 		</div>
 		<div ng-show="selectedScreen.id == 'about'" class="content"  style="text-align: left;" ng-cloak>
 			<div style="font-weight: bold; margin: 8px;">
-				<h2>mobMarket</h2>
+				<h2>mobMarket <i>Free</i></h2>
 				<h3>Version 3.0.3</h3>
 			</div>
 			<div style="margin: 8px;">
 				<p>Developed by Raphael Cohen.
 				If you like this app or would like to share feedback on usage, please contact us.</p>
 				<div style="margin-right: 12px; overflow: hidden;">
-					<a href="mailto:raphael.cohen@gmail.com?subject=mobMarket"><span class="chartButton" style="width: 90%; font-size: 24px; text-align: center; margin: 4px; color: #ffffff;" touch-btn="">Contact us</span></a>
+					<span class="chartButton" style="width: 90%; font-size: 24px; text-align: center; margin: 4px; color: #ffffff;" touch-btn="https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro" touch-action="openLink">Get Pro Version</span>
 					<br />
 					<span class="chartButton" style="width: 90%; font-size: 24px; font-weight: bold; text-align: center; margin: 4px;" touch-btn="" touch-action="shareApp">Share this app</span>
+					<br />
+					<a href="mailto:raphael.cohen@gmail.com?subject=mobMarket"><span class="chartButton" style="width: 90%; font-size: 24px; text-align: center; margin: 4px; color: #ffffff;" touch-btn="">Contact us</span></a>
 				</div>
 			</div>
 		</div>
@@ -288,7 +290,7 @@
 					<p>Backup your Portfolio data in the cloud, and restore your data from anywhere, anytime, on any device.</p>
 				</div>
 				<div>
-					<div style="float: left; width: 54px; overflow: hidden;"><!--&#9990;-->
+					<div style="float: left; width: 54px; overflow: hidden;">
 						<div id="iphone">
 							<span class="earpiece"></span>
 							<span class="screen"></span>
@@ -331,11 +333,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="bottomAd" id="divBottomAd">
-		<script async type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=565466267"></script>
-	</div>
 	<script type="text/javascript" src="js/angular.min.js"></script>
 	<script type="text/javascript" src="js/angular-sanitize.min.js"></script>
 	<script type="text/javascript" src="js/mmcontroller.js"></script>
+	<div class="bottomAd" id="divBottomAd">
+		<script src="http://ad.leadboltads.net/show_app_ad.js?section_id=565466267"></script>
+	</div>
 </body>
 </html>

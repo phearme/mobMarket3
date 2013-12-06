@@ -59,6 +59,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.chooseQtyPtf = false;
 	$scope.inputQty = 1;
 	$scope.restoreCode = "";
+	$scope.launchCounter = 1;
 
 	// secure apply (prevent "digest in progress" collision)
 	$scope.safeApply = function (fn) {
@@ -104,6 +105,15 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	// external links in default browser
 	$scope.openLink = function (link) {
 		window.open(link, "_system");
+	};
+
+	$scope.featureInProVersion = function (msg) {
+		var m = msg || "This feature is only available in the Pro version. Would you like to upgrade to mobMarket Pro ?";
+		navigator.notification.confirm(m, function (btn) {
+			if (btn === 1) {
+				$scope.openLink("https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro");
+			}
+		}, "Get the Pro version", ["Ok", "No thanks"]);
 	};
 
 	// simple screen navigation helpers
@@ -488,12 +498,16 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			quantity = $scope.inputQty;
 			floatQty = window.parseFloat(quantity);
 			if (floatQty) {
-				$scope.safeApply(function () {
-					$scope.selectedStock.quantity = floatQty;
-					$scope.portfolio.push($scope.selectedStock);
-					$scope.sortPortfolio();
-				});
-				window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
+				if ($scope.portfolio.length >= 10) {
+					$scope.featureInProVersion("Sorry. You cannot add more items to your portfolio in the Free version. Get the Pro version for unlimited features.");
+				} else {
+					$scope.safeApply(function () {
+						$scope.selectedStock.quantity = floatQty;
+						$scope.portfolio.push($scope.selectedStock);
+						$scope.sortPortfolio();
+					});
+					window.localStorage.setItem("portfolio", JSON.stringify($scope.portfolio));
+				}
 				$scope.chooseQtyPtf = false;
 				$scope.selectScreenById("portfolio");
 			}
@@ -523,10 +537,14 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 					}
 				});
 			} else {
-				$scope.safeApply(function () {
-					$scope.watchlist.push($scope.selectedStock);
-					$scope.sortWatchList();
-				});
+				if ($scope.watchlist.length >= 10) {
+					$scope.featureInProVersion("Sorry. You cannot add more items to your watchlist in the Free version. Get the Pro version for unlimited features.");
+				} else {
+					$scope.safeApply(function () {
+						$scope.watchlist.push($scope.selectedStock);
+						$scope.sortWatchList();
+					});
+				}
 			}
 			window.localStorage.setItem("watchlist", JSON.stringify($scope.watchlist));
 			$scope.selectScreenById("watchlist");
@@ -613,17 +631,6 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		return ptf;
 	};
 
-	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
-	if ($scope.watchlist.length === 0) {
-		$scope.watchlist = $scope.previousVersionWatchlist();
-	}
-	$scope.sortWatchList();
-	$scope.portfolio = JSON.parse(window.localStorage.getItem("portfolio")) || [];
-	if ($scope.portfolio.length === 0) {
-		$scope.portfolio = $scope.previousVersionPortfolio();
-	}
-	$scope.sortPortfolio();
-
 	$scope.backupRestore = function (action) {
 		$scope.backupRestoreDone = false;
 		$scope.backupSuccess = false;
@@ -656,9 +663,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 				});
 			}
 		} else if (action === "enterrestorecode") {
-			navigator.notification.confirm("Restoring is only available in the Pro version. Would you like ", function (btn) {
-				console.log("btn");
-			}, "Get the Pro version", ["Ok", "No thanks"]);
+			$scope.featureInProVersion();
 			/*
 			$scope.inputRestoreCode = "";
 			$scope.enterRestoreCode = true;
@@ -707,6 +712,25 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 			window.plugins.socialsharing.share("Here is your mobMarket backup code: " + $scope.backupCode + " \nUse this code to restore your portfolio data on any device.", "mobMarket Backup Code");
 		}
 	};
+
+	// get serialized app content
+	$scope.watchlist = JSON.parse(window.localStorage.getItem("watchlist")) || [];
+	if ($scope.watchlist.length === 0) {
+		$scope.watchlist = $scope.previousVersionWatchlist();
+	}
+	$scope.sortWatchList();
+	$scope.portfolio = JSON.parse(window.localStorage.getItem("portfolio")) || [];
+	if ($scope.portfolio.length === 0) {
+		$scope.portfolio = $scope.previousVersionPortfolio();
+	}
+	$scope.sortPortfolio();
+	$scope.launchCounter = window.parseInt(window.localStorage.getItem("launchCounter") || 1);
+	if ($scope.launchCounter > 10) {
+		$scope.featureInProVersion("Get unlimited features and remove Ads in mobMarket Pro.");
+		$scope.launchCounter = 0;
+	}
+	$scope.launchCounter += 1;
+	window.localStorage.setItem("launchCounter", $scope.launchCounter);
 
 	// handle device back button
 	document.addEventListener("backbutton", function () {
@@ -784,11 +808,10 @@ mmapp.directive("drawChart", function () {
 	};
 });
 
-/*
+
 document.addEventListener("deviceready", function () {
 	"use strict";
-*/
+
 	angular.bootstrap(document, ["mmapp"]);
-/*
+
 }, false);
-*/
