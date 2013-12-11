@@ -10,6 +10,10 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.realTimeFrequency = 4500;
 	window.debugScope = $scope;
 	$scope.Math = window.Math;
+	//$scope.linkToProVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro";
+	$scope.linkToProVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarketpro";
+	//$scope.linkToFreeVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarket";
+	$scope.linkToFreeVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarket";
 	$scope.screens = [
 		{id: "search", label: "Search Quote", inMainMenu: true},
 		{id: "stockDetails", label: "", inMainMenu: false},
@@ -111,7 +115,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 		var m = msg || "This feature is only available in the Pro version. Would you like to upgrade to mobMarket Pro ?";
 		navigator.notification.confirm(m, function (btn) {
 			if (btn === 1) {
-				$scope.openLink("https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro");
+				$scope.openLink($scope.linkToProVersion);
 			}
 		}, "Get the Pro version", ["Ok", "No thanks"]);
 	};
@@ -703,7 +707,7 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 
 	$scope.shareApp = function () {
 		if (window.plugins && window.plugins.socialsharing) {
-			window.plugins.socialsharing.share(null, null, null, "https://play.google.com/store/apps/details?id=com.phonegap.mobmarket");
+			window.plugins.socialsharing.share(null, null, null, $scope.linkToFreeVersion);
 		}
 	};
 
