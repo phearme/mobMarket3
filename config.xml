@@ -95,6 +95,10 @@
         Otherwise, you can specify specific domains:
     -->
 	<access origin="https://news.google.com" />
+	<access origin="http://*.google.com" />
+	<access origin="http://*.gstatic.com" />
+	<access origin="http://query.yahooapis.com" />
+	<access origin="http://autoc.finance.yahoo.com" />
 	<access origin="http://cohen.url.ph" />
 	<access origin="http://ad.leadboltads.net" />
     <!--<access origin="http://127.0.0.1*"/>--> <!-- allow local pages -->
