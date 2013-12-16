@@ -1,7 +1,8 @@
 ﻿/*jslint browser:true*/
 /*global console, angular, NewsReader, YAHOO, YQuotes, GQuotes, MMApi, google, $*/
 var newsReader = new NewsReader(),
-	mmapp = angular.module("mmapp", ["ngSanitize"]);
+	mmapp = angular.module("mmapp", ["ngSanitize"]),
+	adScript = document.createElement("script");
 
 // main controller
 mmapp.controller("mmCtrl", function mmCtrl($scope) {
@@ -10,10 +11,10 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.realTimeFrequency = 4500;
 	window.debugScope = $scope;
 	$scope.Math = window.Math;
-	//$scope.linkToProVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro";
-	$scope.linkToProVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarketpro";
-	//$scope.linkToFreeVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarket";
-	$scope.linkToFreeVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarket";
+	$scope.linkToProVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro";
+	//$scope.linkToProVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarketpro";
+	$scope.linkToFreeVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarket";
+	//$scope.linkToFreeVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarket";
 	$scope.screens = [
 		{id: "search", label: "Search Quote", inMainMenu: true},
 		{id: "stockDetails", label: "", inMainMenu: false},
@@ -812,10 +813,13 @@ mmapp.directive("drawChart", function () {
 	};
 });
 
-
+/*
 document.addEventListener("deviceready", function () {
 	"use strict";
-
+*/
 	angular.bootstrap(document, ["mmapp"]);
-
+	document.getElementsById("divBottomAd").appendChild(adScript);
+	adScript.setAttribute("src", "http://ad.leadboltads.net/show_app_ad.js?section_id=565466267");
+/*
 }, false);
+*/
