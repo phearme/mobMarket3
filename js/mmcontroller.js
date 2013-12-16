@@ -813,13 +813,10 @@ mmapp.directive("drawChart", function () {
 	};
 });
 
-/*
+
 document.addEventListener("deviceready", function () {
 	"use strict";
-*/
+
 	angular.bootstrap(document, ["mmapp"]);
-	document.getElementsById("divBottomAd").appendChild(adScript);
-	adScript.setAttribute("src", "http://ad.leadboltads.net/show_app_ad.js?section_id=565466267");
-/*
+
 }, false);
-*/
