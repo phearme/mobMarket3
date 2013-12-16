@@ -11,10 +11,10 @@ mmapp.controller("mmCtrl", function mmCtrl($scope) {
 	$scope.realTimeFrequency = 4500;
 	window.debugScope = $scope;
 	$scope.Math = window.Math;
-	$scope.linkToProVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro";
-	//$scope.linkToProVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarketpro";
-	$scope.linkToFreeVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarket";
-	//$scope.linkToFreeVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarket";
+	//$scope.linkToProVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarketpro";
+	$scope.linkToProVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarketpro";
+	//$scope.linkToFreeVersion = "https://play.google.com/store/apps/details?id=com.phonegap.mobmarket";
+	$scope.linkToFreeVersion = "http://www.amazon.com/gp/mas/dl/android?p=com.phonegap.mobmarket";
 	$scope.screens = [
 		{id: "search", label: "Search Quote", inMainMenu: true},
 		{id: "stockDetails", label: "", inMainMenu: false},
