@@ -135,7 +135,7 @@
 		</div>
 		<div ng-show="selectedScreen.id == 'news'" class="content" ng-cloak>
 			<div ng-repeat="newsItem in newsItems" touch-action="openLink" touch-btn="{{newsItem.link}}" class="listItem">
-				<img class="newsImage" ng-show="newsItem.image" ng-src="http:{{newsItem.image}}" />
+				<img class="newsImage" ng-show="newsItem.image" ng-src="https:{{newsItem.image}}" />
 				<div class="listTitle" ng-bind="newsItem.title"></div>
 				<div class="newsDate" ng-bind="newsItem.pubDate"></div>
 				<p class="listContent" ng-show="newsItem.content" ng-bind="newsItem.content"></p>

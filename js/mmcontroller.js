@@ -813,10 +813,11 @@ mmapp.directive("drawChart", function () {
 	};
 });
 
-
+/*
 document.addEventListener("deviceready", function () {
 	"use strict";
-
+*/
 	angular.bootstrap(document, ["mmapp"]);
-
+/*
 }, false);
+*/
