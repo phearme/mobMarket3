@@ -86,6 +86,7 @@
 
 	<gap:platform name="android" />
 	<gap:plugin name="nl.x-services.plugins.socialsharing" />
+    <gap:plugin name="org.apache.cordova.dialogs" />
 
     <!--
         Define access to external domains.
